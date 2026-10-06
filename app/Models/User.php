@@ -48,6 +48,16 @@ class User extends Authenticatable
         return $this->belongsToMany(School::class, 'memberships')->withPivot(['status', 'campus_id'])->withTimestamps();
     }
 
+    /**
+     * Platform staff can reach every school, so outside local development
+     * that power requires two-factor sign-in.
+     */
+    public function platformAccessAllowed(): bool
+    {
+        return $this->is_platform_admin
+            && (app()->environment('local', 'testing') || $this->two_factor_confirmed_at !== null);
+    }
+
     /** Whether the user may act inside the given school. */
     public function canEnterSchool(School $school): bool
     {
@@ -56,7 +66,7 @@ class User extends Authenticatable
         }
 
         if ($this->is_platform_admin) {
-            return true;
+            return $this->platformAccessAllowed();
         }
 
         return $this->memberships()

@@ -23,6 +23,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class StudentImportController extends Controller
 {
+    /** Larger schools import one stage at a time. */
+    public const MAX_ROWS = 2000;
+
     /** The upload form, or the preview of an uploaded file waiting for confirmation. */
     public function create(Request $request): Response
     {
@@ -44,11 +47,21 @@ class StudentImportController extends Controller
 
         $token = (string) Str::uuid();
         $path = $request->file('file')->storeAs($this->dir($currentSchool), $token.'.xlsx', 'local');
-        $sheet = NoorStudentSheet::read(Storage::disk('local')->path($path));
+        try {
+            $sheet = NoorStudentSheet::read(Storage::disk('local')->path($path), self::MAX_ROWS + 1);
+        } catch (\Throwable $e) {
+            Storage::disk('local')->delete($path);
+            report($e);
+            throw ValidationException::withMessages(['file' => __('import.unreadable')]);
+        }
 
         if (! isset($sheet['columns']['full_name_ar'])) {
             Storage::disk('local')->delete($path);
             throw ValidationException::withMessages(['file' => __('import.no_columns')]);
+        }
+        if (count($sheet['rows']) > self::MAX_ROWS) {
+            Storage::disk('local')->delete($path);
+            throw ValidationException::withMessages(['file' => __('import.too_many_rows', ['max' => self::MAX_ROWS])]);
         }
 
         $year = AcademicYear::query()->findOrFail($data['academic_year_id']);

@@ -50,7 +50,8 @@ return [
     |
     */
 
-    'expiration' => null,
+    // Minutes; mobile apps sign in again after 30 days.
+    'expiration' => env('SANCTUM_EXPIRATION', 60 * 24 * 30),
 
     /*
     |--------------------------------------------------------------------------

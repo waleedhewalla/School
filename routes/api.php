@@ -63,7 +63,8 @@ Route::prefix('v1')->name('api.v1.')->middleware('locale')->group(function () {
                 Route::patch('enrollments/{enrollment}', [EnrollmentController::class, 'update'])->name('enrollments.update');
                 Route::post('promotions', [EnrollmentController::class, 'promote'])->name('promotions.store');
             });
-            Route::middleware($studentsView)->group(function () {
+            // The guardian directory (IDs, phones) is for registrars and admins only.
+            Route::middleware($studentsManage)->group(function () {
                 Route::get('guardians', [GuardianController::class, 'index'])->name('guardians.index');
                 Route::get('guardians/{guardian}', [GuardianController::class, 'show'])->name('guardians.show');
             });
@@ -81,7 +82,7 @@ Route::prefix('v1')->name('api.v1.')->middleware('locale')->group(function () {
             // Attendance registers; authorized per section by SectionPolicy.
             Route::get('attendance-codes', [AttendanceController::class, 'codes'])->name('attendance-codes.index');
             Route::get('sections/{section}/attendance', [AttendanceController::class, 'show'])->name('sections.attendance.show');
-            Route::put('sections/{section}/attendance', [AttendanceController::class, 'store'])->name('sections.attendance.store');
+            Route::put('sections/{section}/attendance', [AttendanceController::class, 'store'])->middleware('throttle:60,1')->name('sections.attendance.store');
 
             // Bell schedule and timetables.
             Route::get('periods', [TimetableController::class, 'periods'])->name('periods.index');

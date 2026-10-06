@@ -70,7 +70,8 @@ Slice 6 ✅
 Next (Phase 1 wrap-up)
 - [ ] Verify Noor column aliases against a real export
 - [ ] Confirm the default grading bands and pass marks per stage with the Ministry rules
-- [ ] Security review and load test with a 600-student demo school before the first pilot
+- [x] Security review ([security-review.md](security-review.md)) — 4 medium and 7 low findings, all fixed with regression tests
+- [x] Load test with a 600-student school ([performance.md](performance.md)); production checklist in [deployment.md](deployment.md)
 
 ## Phase 2 — Finance and admissions
 

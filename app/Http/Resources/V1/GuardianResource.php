@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Enums\Permission;
 use App\Models\Guardian;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -17,7 +18,8 @@ class GuardianResource extends JsonResource
             'name' => $this->name,
             'name_ar' => $this->name_ar,
             'name_en' => $this->name_en,
-            'national_id' => $this->national_id,
+            // National IDs only for staff who manage student records.
+            'national_id' => $this->when($request->user()?->can(Permission::StudentsManage) ?? false, $this->national_id),
             'phone' => $this->phone,
             'email' => $this->email,
             'family_id' => $this->family_id,

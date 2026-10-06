@@ -7,6 +7,7 @@ use App\Support\Auth\TwoFactor;
 use App\Support\Locale;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password as PasswordRule;
@@ -53,11 +54,21 @@ class AccountController extends Controller
 
         $request->user()->update(['password' => Hash::make($data['password'])]);
 
+        // Sign out everywhere else: other browser sessions and API tokens.
+        DB::table('sessions')->where('user_id', $request->user()->id)->where('id', '!=', $request->session()->getId())->delete();
+        $request->user()->tokens()->delete();
+
         return back()->with('success', __('Password changed.'));
     }
 
     public function enableTwoFactor(Request $request, TwoFactor $twoFactor): RedirectResponse
     {
+        // Starting setup replaces the secret; while it is on, that must go
+        // through "turn off" (which asks for the password) first.
+        if ($twoFactor->enabled($request->user())) {
+            throw ValidationException::withMessages(['code' => __('Two-factor sign-in is already on. Turn it off first.')]);
+        }
+
         $twoFactor->begin($request->user());
 
         return back();

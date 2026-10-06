@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\V1;
 
+use App\Enums\Permission;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -15,7 +16,8 @@ class StudentResource extends JsonResource
         return [
             'id' => $this->id,
             'student_number' => $this->student_number,
-            'national_id' => $this->national_id,
+            // National IDs only for staff who manage student records.
+            'national_id' => $this->when($request->user()?->can(Permission::StudentsManage) ?? false, $this->national_id),
             'name' => $this->name,
             'name_ar' => $this->name_ar,
             'first_name_ar' => $this->first_name_ar,

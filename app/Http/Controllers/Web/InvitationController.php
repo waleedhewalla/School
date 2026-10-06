@@ -7,6 +7,7 @@ use App\Enums\SchoolRole;
 use App\Http\Controllers\Controller;
 use App\Models\Invitation;
 use App\Models\User;
+use App\Support\Auth\TwoFactor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +35,7 @@ class InvitationController extends Controller
         ]);
     }
 
-    public function accept(Request $request, string $token, AddSchoolMember $addMember): RedirectResponse
+    public function accept(Request $request, string $token, AddSchoolMember $addMember, TwoFactor $twoFactor): RedirectResponse
     {
         $invitation = Invitation::findPending($token);
         abort_if($invitation === null, 404);
@@ -67,6 +68,15 @@ class InvitationController extends Controller
             // Saved without model events: the guest accepting has no school context yet.
             $invitation->forceFill(['accepted_at' => now()])->saveQuietly();
         });
+
+        $request->session()->put('school_id', $invitation->school_id);
+
+        // Existing accounts with two-factor on still have to pass the code step.
+        if ($twoFactor->enabled($user)) {
+            $request->session()->put('login.id', $user->id);
+
+            return redirect()->route('two-factor.challenge');
+        }
 
         Auth::login($user);
         $request->session()->regenerate();

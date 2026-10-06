@@ -70,6 +70,7 @@ class ResultsController extends Controller
     /** The class teacher's remark for a student's report card (empty removes it). */
     public function comment(Request $request, Section $section, Term $term): RedirectResponse
     {
+        abort_unless((int) $term->academic_year_id === (int) $section->academic_year_id, 404);
         abort_unless(self::canComment($request->user(), $section), 403);
 
         $data = $request->validate([
@@ -94,8 +95,8 @@ class ResultsController extends Controller
     public static function canComment($user, Section $section): bool
     {
         return $user->can(Permission::GradesManage)
-            || $section->teachingAssignments()->where('is_homeroom', true)
-                ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->id))->exists();
+            || ($user->can(Permission::GradesRecord) && $section->teachingAssignments()->where('is_homeroom', true)
+                ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->id)->where('status', 'active'))->exists());
     }
 
     /** Server-rendered PDF of the section's report cards (when a PDF service is configured). */

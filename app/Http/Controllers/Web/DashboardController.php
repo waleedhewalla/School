@@ -34,11 +34,10 @@ class DashboardController extends Controller
         $year = AcademicYear::query()->where('is_current', true)->first();
         $today = now($currentSchool->get()->timezone)->toDateString();
 
-        $daily = AttendanceRecord::query()
-            ->with('code')
-            ->where('date', $today)
-            ->where('period', AttendanceRecord::DAILY)
-            ->get();
+        // Counted in the database: a large school has tens of thousands of marks a month.
+        $todayByKind = $this->countByKind(fn ($q) => $q->where('attendance_records.date', $today));
+        $registersTaken = AttendanceRecord::query()->where('date', $today)->where('period', AttendanceRecord::DAILY)
+            ->distinct()->count('section_id');
 
         $sectionIds = Section::query()->when($year, fn ($q) => $q->where('academic_year_id', $year->id))->pluck('id');
 
@@ -61,18 +60,27 @@ class DashboardController extends Controller
                 'room' => $e->room,
             ]);
 
-        $since = now($school->timezone)->subDays(30);
-        $recent = AttendanceRecord::query()->with('code')
-            ->where('period', AttendanceRecord::DAILY)
-            ->where('date', '>=', $since->toDateString())
-            ->get();
-        $inSchool = $recent->filter(fn ($r) => in_array($r->code->kind, [AttendanceKind::Present, AttendanceKind::Late], true))->count();
-        $absences = $recent->filter(fn ($r) => $r->code->kind === AttendanceKind::Absent)->countBy('student_id')
-            ->filter(fn ($n) => $n >= 3)->sortDesc()->take(8);
+        $since = now($school->timezone)->subDays(30)->toDateString();
+        $recentByKind = $this->countByKind(fn ($q) => $q->where('attendance_records.date', '>=', $since));
+        $recentTotal = array_sum($recentByKind);
+        $inSchool = ($recentByKind[AttendanceKind::Present->value] ?? 0) + ($recentByKind[AttendanceKind::Late->value] ?? 0);
+
+        $absences = AttendanceRecord::query()
+            ->join('attendance_codes', 'attendance_codes.id', '=', 'attendance_records.attendance_code_id')
+            ->where('attendance_records.period', AttendanceRecord::DAILY)
+            ->where('attendance_records.date', '>=', $since)
+            ->where('attendance_codes.kind', AttendanceKind::Absent->value)
+            ->groupBy('attendance_records.student_id')
+            ->havingRaw('count(*) >= 3')
+            ->orderByRaw('count(*) desc')
+            ->limit(8)
+            ->selectRaw('attendance_records.student_id, count(*) as total')
+            ->pluck('total', 'student_id')
+            ->map(fn ($n) => (int) $n);
         $atRisk = Student::query()->whereKey($absences->keys())->get()->keyBy('id');
 
         return Inertia::render('Dashboard', [
-            'attendanceRate' => $recent->isEmpty() ? null : round($inSchool / $recent->count() * 100, 1),
+            'attendanceRate' => $recentTotal === 0 ? null : round($inSchool / $recentTotal * 100, 1),
             'atRisk' => $absences->map(fn ($n, $id) => ['student_id' => $id, 'name' => $atRisk[$id]?->name, 'absences' => $n])->values(),
             'announcements' => Announcement::query()->with('section.gradeLevel', 'author')->published()->forStaff()->limit(3)->get()
                 ->map(fn (Announcement $a) => AnnouncementController::present($a)),
@@ -82,10 +90,25 @@ class DashboardController extends Controller
             'stats' => [
                 'students' => $year ? Enrollment::query()->where('academic_year_id', $year->id)->where('status', EnrollmentStatus::Active)->count() : 0,
                 'sections' => $sectionIds->count(),
-                'registers_taken' => $daily->pluck('section_id')->unique()->count(),
-                'absent_today' => $daily->filter(fn ($r) => $r->code->kind === AttendanceKind::Absent)->count(),
-                'late_today' => $daily->filter(fn ($r) => $r->code->kind === AttendanceKind::Late)->count(),
+                'registers_taken' => $registersTaken,
+                'absent_today' => $todayByKind[AttendanceKind::Absent->value] ?? 0,
+                'late_today' => $todayByKind[AttendanceKind::Late->value] ?? 0,
             ],
         ]);
+    }
+
+    /** @return array<string, int> daily-register marks per attendance kind */
+    private function countByKind(callable $filter): array
+    {
+        $query = AttendanceRecord::query()
+            ->join('attendance_codes', 'attendance_codes.id', '=', 'attendance_records.attendance_code_id')
+            ->where('attendance_records.period', AttendanceRecord::DAILY);
+        $filter($query);
+
+        return $query->groupBy('attendance_codes.kind')
+            ->selectRaw('attendance_codes.kind, count(*) as total')
+            ->pluck('total', 'kind')
+            ->map(fn ($n) => (int) $n)
+            ->all();
     }
 }

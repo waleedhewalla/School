@@ -57,6 +57,7 @@ class UserController extends Controller
             'roles.*' => [Rule::enum(SchoolRole::class)],
         ]);
         $school = $currentSchool->get();
+        $this->ensureCanGrant($request->user(), $data['roles']);
 
         $alreadyMember = Membership::query()->where('school_id', $school->id)
             ->whereHas('user', fn ($q) => $q->where('email', $data['email']))->exists();
@@ -92,6 +93,8 @@ class UserController extends Controller
             throw ValidationException::withMessages(['roles' => __('You cannot remove your own admin access.')]);
         }
 
+        $this->ensureCanGrant($request->user(), $data['roles'] ?? []);
+
         if (isset($data['roles'])) {
             $user->unsetRelation('roles');
             $user->syncRoles($data['roles']);
@@ -101,5 +104,17 @@ class UserController extends Controller
         }
 
         return back()->with('success', __('Changes saved.'));
+    }
+
+    /** Nobody can hand out a role carrying permissions they don't hold themselves. */
+    private function ensureCanGrant(User $actor, array $roles): void
+    {
+        $mine = $actor->getAllPermissions()->pluck('name');
+
+        foreach (Role::query()->whereIn('name', $roles)->with('permissions')->get() as $role) {
+            if ($role->permissions->pluck('name')->diff($mine)->isNotEmpty()) {
+                throw ValidationException::withMessages(['roles' => __('You cannot grant a role with more access than your own.')]);
+            }
+        }
     }
 }

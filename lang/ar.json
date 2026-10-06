@@ -335,5 +335,7 @@
     "School default (all stages)": "الافتراضي للمدرسة (كل المراحل)",
     "This stage uses the school default. Saving below gives it its own scale.": "هذه المرحلة تستخدم سلم المدرسة الافتراضي. الحفظ أدناه ينشئ لها سلمًا خاصًا.",
     "Use the school default instead": "العودة لسلم المدرسة الافتراضي",
-    "Download PDF": "تنزيل PDF"
+    "Download PDF": "تنزيل PDF",
+    "Two-factor sign-in is already on. Turn it off first.": "التحقق بخطوتين مفعّل. أوقفه أولًا ثم أعد إعداده.",
+    "You cannot grant a role with more access than your own.": "لا يمكنك منح دور بصلاحيات أوسع من صلاحياتك."
 }

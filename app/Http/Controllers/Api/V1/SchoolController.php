@@ -17,7 +17,7 @@ class SchoolController extends Controller
     /** Platform admins onboard a new school and name its first admin. */
     public function store(Request $request, CreateSchool $createSchool): SchoolResource
     {
-        abort_unless($request->user()->is_platform_admin, 403);
+        abort_unless($request->user()->platformAccessAllowed(), 403);
 
         $data = $request->validate([
             'slug' => ['required', 'string', 'alpha_dash:ascii', 'regex:/^[a-z]/', 'max:60', Rule::unique('schools', 'slug')],

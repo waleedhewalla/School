@@ -58,6 +58,6 @@ class AppServiceProvider extends ServiceProvider
     {
         // Platform staff (support/onboarding) may act in any school they
         // have entered; everyone else goes through their school roles.
-        Gate::before(fn (User $user) => $user->is_platform_admin ? true : null);
+        Gate::before(fn (User $user) => $user->platformAccessAllowed() ? true : null);
     }
 }

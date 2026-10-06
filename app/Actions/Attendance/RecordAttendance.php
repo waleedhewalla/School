@@ -2,6 +2,7 @@
 
 namespace App\Actions\Attendance;
 
+use App\Enums\Permission;
 use App\Events\StudentsMarkedAbsent;
 use App\Models\AttendanceCode;
 use App\Models\AttendanceRecord;
@@ -15,8 +16,8 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * Saves a register for one section, date and period. Re-saving the same
- * register corrects it. Guardians are only notified about records that
- * changed to a code that asks for it, so corrections don't re-send alerts.
+ * register corrects it. Guardians are notified at most once per record,
+ * when it first changes to a code that asks for it.
  */
 class RecordAttendance
 {
@@ -24,8 +25,15 @@ class RecordAttendance
      * @param  list<array{student_id: int, code: string, note?: string|null}>  $rows
      * @return Collection<int, AttendanceRecord>
      */
+    /** Teachers may correct the last week; older registers need attendance.manage. */
+    public const TEACHER_BACKDATE_DAYS = 7;
+
     public function handle(Section $section, CarbonInterface $date, int $period, array $rows, User $by): Collection
     {
+        if (! $by->can(Permission::AttendanceManage) && $date->lt(now()->subDays(self::TEACHER_BACKDATE_DAYS)->startOfDay())) {
+            throw ValidationException::withMessages(['date' => __('attendance.too_old', ['days' => self::TEACHER_BACKDATE_DAYS])]);
+        }
+
         $codes = AttendanceCode::query()->get()->keyBy('code');
         $roster = Student::query()->inSection($section->id)->pluck('id')->flip();
 
@@ -61,7 +69,9 @@ class RecordAttendance
 
                 $saved->push($record->setRelation('code', $code));
 
-                if ($codeChanged && $code->notify_guardian) {
+                // One alert per student, day and period, however often it's corrected.
+                if ($codeChanged && $code->notify_guardian && $record->guardian_notified_at === null) {
+                    $record->forceFill(['guardian_notified_at' => now()])->save();
                     $toNotify->push($record);
                 }
             }

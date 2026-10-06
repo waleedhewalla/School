@@ -93,7 +93,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/students/{student}', [StudentController::class, 'show'])->whereNumber('student')->name('students.show');
 
         Route::get('/attendance', [AttendanceController::class, 'index'])->name('attendance.index');
-        Route::post('/attendance/{section}', [AttendanceController::class, 'store'])->name('attendance.store');
+        Route::post('/attendance/{section}', [AttendanceController::class, 'store'])->middleware('throttle:60,1')->name('attendance.store');
 
         Route::get('/my/children', [PortalController::class, 'children'])->name('portal.children');
 
@@ -118,7 +118,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/announcements', [AnnouncementController::class, 'index'])
             ->middleware('can:'.Permission::AcademicStructureView)->name('announcements.index');
         Route::middleware('can:'.Permission::AnnouncementsManage)->group(function () {
-            Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+            Route::post('/announcements', [AnnouncementController::class, 'store'])->middleware('throttle:10,1')->name('announcements.store');
             Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
         });
 

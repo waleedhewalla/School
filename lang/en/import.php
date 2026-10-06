@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'unreadable' => 'The file could not be read. Make sure it is an Excel .xlsx file.',
+    'too_many_rows' => 'The file has more than :max rows. Split it by stage and upload in parts.',
     'already_exists' => 'National ID already registered; skipped.',
     'failed' => 'This row could not be imported.',
     'name_required' => 'Student name is required (at least first and family name).',

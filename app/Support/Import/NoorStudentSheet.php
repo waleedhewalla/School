@@ -44,7 +44,7 @@ class NoorStudentSheet
      * @return array{columns: array<string, int>, rows: list<array{row: int, values: array<string, mixed>}>}
      *                                                                                                       rows keyed by canonical column; row numbers as in Excel
      */
-    public static function read(string $path): array
+    public static function read(string $path, int $maxRows = PHP_INT_MAX): array
     {
         $reader = new Reader;
         $reader->open($path);
@@ -75,6 +75,10 @@ class NoorStudentSheet
                         $values[$key] = is_string($value) ? trim($value) : $value;
                     }
                     $rows[] = ['row' => $line, 'values' => $values];
+
+                    if (count($rows) >= $maxRows) {
+                        break;
+                    }
                 }
 
                 break; // first sheet only
