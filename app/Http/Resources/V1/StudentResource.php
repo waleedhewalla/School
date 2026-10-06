@@ -16,6 +16,7 @@ class StudentResource extends JsonResource
         return [
             'id' => $this->id,
             'student_number' => $this->student_number,
+            'has_account' => $this->user_id !== null,
             // National IDs only for staff who manage student records.
             'national_id' => $this->when($request->user()?->can(Permission::StudentsManage) ?? false, $this->national_id),
             'name' => $this->name,

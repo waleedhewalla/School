@@ -69,6 +69,9 @@ final class Permission
 
     public const InventoryManage = 'inventory.manage';
 
+    /** Salaries, contracts and payroll runs (sensitive: admin and accountant by default). */
+    public const PayrollManage = 'payroll.manage';
+
     public const AuditView = 'audit.view';
 
     /** @return list<string> */

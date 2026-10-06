@@ -5,9 +5,12 @@ namespace App\Http\Controllers\Web;
 use App\Actions\Schools\AddSchoolMember;
 use App\Enums\SchoolRole;
 use App\Http\Controllers\Controller;
+use App\Models\Guardian;
 use App\Models\Invitation;
+use App\Models\Student;
 use App\Models\User;
 use App\Support\Auth\TwoFactor;
+use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +67,16 @@ class InvitationController extends Controller
             $user->forceFill(['email_verified_at' => $user->email_verified_at ?? now()])->save();
 
             $addMember->handle($invitation->school, $user, ...array_map(fn ($r) => SchoolRole::from($r), $invitation->roles));
+
+            // Portal invitations link the account to the guardian or student record.
+            app(CurrentSchool::class)->run($invitation->school, function () use ($invitation, $user) {
+                if ($invitation->guardian_id) {
+                    Guardian::query()->whereKey($invitation->guardian_id)->first()?->forceFill(['user_id' => $user->id])->save();
+                }
+                if ($invitation->student_id) {
+                    Student::query()->whereKey($invitation->student_id)->first()?->forceFill(['user_id' => $user->id])->save();
+                }
+            });
 
             // Saved without model events: the guest accepting has no school context yet.
             $invitation->forceFill(['accepted_at' => now()])->saveQuietly();

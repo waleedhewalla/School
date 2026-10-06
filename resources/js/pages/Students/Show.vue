@@ -15,6 +15,13 @@ const panel = ref(null);
 const move = useForm({ section_id: '' });
 const withdraw = useForm({ status: 'withdrawn', left_on: new Date().toISOString().slice(0, 10) });
 const submitMove = () => move.patch(`/enrollments/${active.value.id}`, { preserveScroll: true, onSuccess: () => { panel.value = null; } });
+// Portal logins for guardians and the student.
+const inviting = ref(null); // 'student' or a guardian id
+const invite = useForm({ email: '' });
+const startInvite = (key, email = '') => { inviting.value = key; invite.email = email ?? ''; invite.clearErrors(); };
+const sendInvite = () => invite.post(inviting.value === 'student' ? `/students/${s.value.id}/invite` : `/guardians/${inviting.value}/invite`, {
+    preserveScroll: true, onSuccess: () => { inviting.value = null; },
+});
 const submitWithdraw = () => withdraw.patch(`/enrollments/${active.value.id}`, { preserveScroll: true, onSuccess: () => { panel.value = null; } });
 </script>
 
@@ -74,9 +81,27 @@ const submitWithdraw = () => withdraw.patch(`/enrollments/${active.value.id}`, {
                     <li v-for="g in s.guardians" :key="g.id">
                         <div class="font-medium">{{ g.name }} <span v-if="g.is_primary" class="text-xs text-accent">· {{ t('Primary') }}</span></div>
                         <div class="text-muted">{{ t(`relationship.${g.relationship}`) }}<template v-if="g.phone"> · <span dir="ltr">{{ g.phone }}</span></template></div>
+                        <div v-if="canManage" class="mt-1">
+                            <span v-if="g.has_account" class="text-xs text-accent">✓ {{ t('Has a portal login') }}</span>
+                            <button v-else-if="inviting !== g.id" type="button" class="text-xs text-accent hover:underline" @click="startInvite(g.id, g.email)">{{ t('Invite to the portal') }}</button>
+                            <form v-else class="mt-1 flex gap-2" @submit.prevent="sendInvite">
+                                <input v-model="invite.email" type="email" class="input py-1" dir="ltr" required :placeholder="t('Email')">
+                                <button class="btn-primary px-3 py-1" :disabled="invite.processing">{{ t('Send') }}</button>
+                            </form>
+                            <p v-if="inviting === g.id && invite.errors.email" class="text-xs text-danger">{{ invite.errors.email }}</p>
+                        </div>
                     </li>
                     <li v-if="!s.guardians?.length" class="text-muted">—</li>
                 </ul>
+                <div v-if="canManage" class="mt-4 border-t border-line pt-3 text-sm">
+                    <span v-if="s.has_account" class="text-accent">✓ {{ t('The student has a login (quizzes, homework)') }}</span>
+                    <button v-else-if="inviting !== 'student'" type="button" class="text-accent hover:underline" @click="startInvite('student')">{{ t('Give the student a login') }}</button>
+                    <form v-else class="flex gap-2" @submit.prevent="sendInvite">
+                        <input v-model="invite.email" type="email" class="input py-1" dir="ltr" required :placeholder="t('Student email')">
+                        <button class="btn-primary px-3 py-1" :disabled="invite.processing">{{ t('Send') }}</button>
+                    </form>
+                    <p v-if="inviting === 'student' && invite.errors.email" class="text-xs text-danger">{{ invite.errors.email }}</p>
+                </div>
             </section>
 
             <section class="card lg:col-span-2">

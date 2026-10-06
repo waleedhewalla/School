@@ -52,6 +52,7 @@ enum SchoolRole: string
             ],
             self::Accountant => [
                 Permission::StudentsView, Permission::FinanceView, Permission::FinanceManage, Permission::InventoryManage,
+                Permission::StaffView, Permission::PayrollManage,
             ],
             // School nurse: health records and clinic visits.
             self::Nurse => [

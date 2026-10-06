@@ -117,5 +117,15 @@
     "condition.damaged": "Damaged",
     "condition.disposed": "Disposed",
     "role.nurse": "Nurse",
-    "role.librarian": "Librarian"
+    "role.librarian": "Librarian",
+    "question.single": "Multiple choice",
+    "question.multiple": "Several answers",
+    "question.true_false": "True or false",
+    "question.short": "Short answer",
+    "attempt.not_started": "Not started",
+    "attempt.in_progress": "In progress",
+    "quiz_state.open": "Open now",
+    "quiz_state.upcoming": "Upcoming",
+    "quiz_state.done": "Submitted",
+    "quiz_state.missed": "Missed"
 }

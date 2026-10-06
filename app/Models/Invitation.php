@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * An invitation to join a school. Only a hash of the token is stored; the
  * token itself is sent once by email.
  */
-#[Fillable(['email', 'name', 'roles', 'token_hash', 'invited_by', 'expires_at', 'accepted_at'])]
+#[Fillable(['email', 'name', 'roles', 'guardian_id', 'student_id', 'token_hash', 'invited_by', 'expires_at', 'accepted_at'])]
 class Invitation extends Model
 {
     use BelongsToSchool;

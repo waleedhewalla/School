@@ -20,10 +20,13 @@ use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\LibraryController;
 use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\MarksController;
+use App\Http\Controllers\Web\MyQuizController;
 use App\Http\Controllers\Web\PasswordResetController;
 use App\Http\Controllers\Web\PlatformController;
 use App\Http\Controllers\Web\PortalController;
+use App\Http\Controllers\Web\PortalInviteController;
 use App\Http\Controllers\Web\PromotionController;
+use App\Http\Controllers\Web\QuizController;
 use App\Http\Controllers\Web\RequestsController;
 use App\Http\Controllers\Web\ResultsController;
 use App\Http\Controllers\Web\SchoolSwitchController;
@@ -116,6 +119,9 @@ Route::middleware('auth')->group(function () {
             Route::put('/students/{student}', [StudentController::class, 'update'])->whereNumber('student')->name('students.update');
             Route::patch('/enrollments/{enrollment}', [EnrollmentController::class, 'update'])->name('enrollments.update');
             Route::get('/guardians/lookup', GuardianLookupController::class)->name('guardians.lookup');
+            Route::post('/guardians/invite-all', [PortalInviteController::class, 'allGuardians'])->middleware('throttle:3,10')->name('guardians.invite-all');
+            Route::post('/guardians/{guardian}/invite', [PortalInviteController::class, 'guardian'])->middleware('throttle:20,1')->name('guardians.invite');
+            Route::post('/students/{student}/invite', [PortalInviteController::class, 'student'])->whereNumber('student')->middleware('throttle:20,1')->name('students.invite');
             Route::get('/promotions', [PromotionController::class, 'index'])->name('promotions.index');
             Route::post('/promotions', [PromotionController::class, 'store'])->name('promotions.store');
         });
@@ -183,6 +189,21 @@ Route::middleware('auth')->group(function () {
         Route::get('/leave', [RequestsController::class, 'leave'])->name('leave.index');
         Route::post('/leave/{leave}/review', [RequestsController::class, 'reviewLeave'])->name('leave.review');
         Route::get('/leave/{leave}/attachment', [RequestsController::class, 'leaveAttachment'])->name('leave.attachment');
+
+        // Online quizzes: teachers for their classes; students take them, guardians see results.
+        Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
+        Route::post('/quizzes', [QuizController::class, 'store'])->middleware('can:'.Permission::HomeworkAssign)->name('quizzes.store');
+        Route::get('/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quizzes.edit');
+        Route::put('/quizzes/{quiz}', [QuizController::class, 'update'])->name('quizzes.update');
+        Route::delete('/quizzes/{quiz}', [QuizController::class, 'destroy'])->name('quizzes.destroy');
+        Route::post('/quizzes/{quiz}/questions', [QuizController::class, 'saveQuestion'])->name('quizzes.questions.store');
+        Route::put('/quizzes/{quiz}/questions/{question}', [QuizController::class, 'saveQuestion'])->name('quizzes.questions.update');
+        Route::delete('/quizzes/{quiz}/questions/{question}', [QuizController::class, 'destroyQuestion'])->name('quizzes.questions.destroy');
+        Route::get('/quizzes/{quiz}/results', [QuizController::class, 'results'])->name('quizzes.results');
+        Route::post('/quizzes/{quiz}/marks', [QuizController::class, 'sendToMarks'])->name('quizzes.marks');
+        Route::get('/my/quizzes', [MyQuizController::class, 'index'])->name('quizzes.mine');
+        Route::get('/my/quizzes/{quiz}', [MyQuizController::class, 'take'])->name('quizzes.take');
+        Route::post('/my/quizzes/{quiz}', [MyQuizController::class, 'submit'])->middleware('throttle:20,1')->name('quizzes.submit');
 
         // School services.
         Route::middleware('can:'.Permission::ClinicManage)->group(function () {

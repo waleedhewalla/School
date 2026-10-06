@@ -19,6 +19,10 @@ watch(filters, () => {
     }, 300);
 });
 
+const inviteAll = () => {
+    if (confirm(t('Email a portal invitation to every guardian who has an email and no login yet?'))) router.post('/guardians/invite-all');
+};
+
 const classLabel = (student) => {
     const e = student.current_enrollment;
     if (!e) return '—';
@@ -32,6 +36,7 @@ const classLabel = (student) => {
             <template v-if="$page.props.can['students.manage']">
                 <Link href="/students/create" class="btn-primary">{{ t('Admit a student') }}</Link>
                 <Link href="/students/import" class="btn-ghost">{{ t('Import from Noor') }}</Link>
+                <button type="button" class="btn-ghost" @click="inviteAll">{{ t('Invite guardians to the portal') }}</button>
             </template>
             <input v-model="filters.search" type="search" class="input max-w-xs" :placeholder="t('Search by name, number or ID')">
             <select v-model="filters.section_id" class="input max-w-xs">
