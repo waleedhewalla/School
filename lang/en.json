@@ -93,5 +93,8 @@
     "document.status.rejected": "Rejected",
     "Powered by Madrasa": "Powered by Madrasa",
     "Grade level": "Grade",
-    "Application period": "Application period"
+    "Application period": "Application period",
+    "campus.female": "Girls",
+    "campus.male": "Boys",
+    "campus.mixed": "Mixed"
 }

@@ -50,9 +50,11 @@ const groups = computed(() => [
     {
         label: t('Administration'),
         items: [
+            { href: '/setup/years', match: '/setup', label: t('School setup'), show: can.value['academic-structure.manage'] },
+            { href: '/staff', label: t('Staff'), show: can.value['staff.manage'] },
             { href: '/users', label: t('Users'), show: can.value['members.manage'] },
             {
-                href: can.value['timetable.manage'] ? '/settings/periods' : (can.value['grades.manage'] ? '/settings/grading' : '/settings/notifications'),
+                href: can.value['school.manage'] ? '/settings/school' : (can.value['timetable.manage'] ? '/settings/periods' : '/settings/grading'),
                 match: '/settings',
                 label: t('Settings'),
                 show: can.value['timetable.manage'] || can.value['school.manage'] || can.value['grades.manage'],

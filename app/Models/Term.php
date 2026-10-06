@@ -7,6 +7,7 @@ use App\Models\Concerns\HasBilingualName;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['academic_year_id', 'name_ar', 'name_en', 'sequence', 'starts_on', 'ends_on', 'marks_open', 'results_published_at'])]
 class Term extends Model
@@ -32,5 +33,11 @@ class Term extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    /** @return HasMany<AssessmentComponent, $this> */
+    public function assessmentComponents(): HasMany
+    {
+        return $this->hasMany(AssessmentComponent::class);
     }
 }

@@ -20,6 +20,8 @@ use App\Http\Controllers\Web\PromotionController;
 use App\Http\Controllers\Web\ResultsController;
 use App\Http\Controllers\Web\SchoolSwitchController;
 use App\Http\Controllers\Web\SettingsController;
+use App\Http\Controllers\Web\SetupController;
+use App\Http\Controllers\Web\StaffController;
 use App\Http\Controllers\Web\StudentController;
 use App\Http\Controllers\Web\StudentImportController;
 use App\Http\Controllers\Web\TimetableController;
@@ -164,7 +166,37 @@ Route::middleware('auth')->group(function () {
             Route::get('/admission-documents/{document}', [AdmissionsController::class, 'document'])->name('admissions.documents.show');
         });
 
+        Route::middleware('can:'.Permission::AcademicStructureManage)->group(function () {
+            Route::get('/setup/years', [SetupController::class, 'years'])->name('setup.years');
+            Route::post('/setup/years', [SetupController::class, 'storeYear'])->name('setup.years.store');
+            Route::put('/setup/years/{academic_year}', [SetupController::class, 'updateYear'])->name('setup.years.update');
+            Route::delete('/setup/years/{academic_year}', [SetupController::class, 'destroyYear'])->name('setup.years.destroy');
+            Route::post('/setup/years/{academic_year}/terms', [SetupController::class, 'storeTerm'])->name('setup.terms.store');
+            Route::put('/setup/terms/{term}', [SetupController::class, 'updateTerm'])->name('setup.terms.update');
+            Route::delete('/setup/terms/{term}', [SetupController::class, 'destroyTerm'])->name('setup.terms.destroy');
+            Route::get('/setup/sections', [SetupController::class, 'sections'])->name('setup.sections');
+            Route::post('/setup/sections', [SetupController::class, 'storeSection'])->name('setup.sections.store');
+            Route::put('/setup/sections/{section}', [SetupController::class, 'updateSection'])->name('setup.sections.update');
+            Route::delete('/setup/sections/{section}', [SetupController::class, 'destroySection'])->name('setup.sections.destroy');
+            Route::get('/setup/subjects', [SetupController::class, 'subjects'])->name('setup.subjects');
+            Route::post('/setup/subjects', [SetupController::class, 'storeSubject'])->name('setup.subjects.store');
+            Route::put('/setup/subjects/{subject}', [SetupController::class, 'updateSubject'])->name('setup.subjects.update');
+            Route::delete('/setup/subjects/{subject}', [SetupController::class, 'destroySubject'])->name('setup.subjects.destroy');
+        });
+
+        Route::middleware('can:'.Permission::StaffManage)->group(function () {
+            Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
+            Route::post('/staff', [StaffController::class, 'store'])->name('staff.store');
+            Route::put('/staff/{staff_member}', [StaffController::class, 'update'])->name('staff.update');
+            Route::get('/staff/assignments', [StaffController::class, 'assignments'])->name('staff.assignments');
+            Route::post('/staff/assignments/{section}', [StaffController::class, 'assign'])->name('staff.assign');
+        });
+
         Route::middleware('can:'.Permission::SchoolManage)->group(function () {
+            Route::get('/settings/school', [SettingsController::class, 'school'])->name('settings.school');
+            Route::put('/settings/school', [SettingsController::class, 'saveSchool'])->name('settings.school.save');
+            Route::post('/settings/campuses', [SettingsController::class, 'saveCampus'])->name('settings.campuses.store');
+            Route::put('/settings/campuses/{campus}', [SettingsController::class, 'saveCampus'])->name('settings.campuses.update');
             Route::get('/settings/notifications', [SettingsController::class, 'notifications'])->name('settings.notifications');
             Route::put('/settings/notifications', [SettingsController::class, 'saveNotifications'])->name('settings.notifications.save');
         });

@@ -5,6 +5,7 @@ import { useT } from '../lib/i18n';
 const t = useT();
 const page = usePage();
 const tabs = [
+    { href: '/settings/school', label: 'School profile', permission: 'school.manage' },
     { href: '/settings/periods', label: 'Bell schedule', permission: 'timetable.manage' },
     { href: '/settings/grading', label: 'Grading scale', permission: 'grades.manage' },
     { href: '/settings/notifications', label: 'Guardian notifications', permission: 'school.manage' },

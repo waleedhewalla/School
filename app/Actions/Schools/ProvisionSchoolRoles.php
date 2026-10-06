@@ -36,4 +36,27 @@ class ProvisionSchoolRoles
         setPermissionsTeamId($previousTeam);
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }
+
+    /**
+     * For existing schools after an upgrade: gives every default role the
+     * default permissions it lacks. Never removes anything, so a school's
+     * own role edits survive.
+     */
+    public static function grantMissingDefaults(): void
+    {
+        foreach (PermissionName::all() as $name) {
+            Permission::findOrCreate($name, 'web');
+        }
+
+        foreach (SchoolRole::cases() as $roleName) {
+            Role::query()->where('name', $roleName->value)->each(function (Role $role) use ($roleName) {
+                $missing = array_diff($roleName->defaultPermissions(), $role->permissions()->pluck('name')->all());
+                if ($missing) {
+                    $role->givePermissionTo($missing);
+                }
+            });
+        }
+
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
+    }
 }
