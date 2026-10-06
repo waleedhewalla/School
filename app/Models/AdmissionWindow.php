@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Enums\ApplicationStatus;
 use App\Models\Concerns\BelongsToSchool;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,7 +18,7 @@ class AdmissionWindow extends Model
 
     protected function casts(): array
     {
-        return ['opens_on' => 'date', 'closes_on' => 'date', 'born_from' => 'date', 'born_to' => 'date'];
+        return ['opens_on' => DateOnly::class, 'closes_on' => DateOnly::class, 'born_from' => DateOnly::class, 'born_to' => DateOnly::class];
     }
 
     /** @return BelongsTo<GradeLevel, $this> */

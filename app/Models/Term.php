@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Models\Concerns\BelongsToSchool;
 use App\Models\Concerns\HasBilingualName;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,8 +18,8 @@ class Term extends Model
     protected function casts(): array
     {
         return [
-            'starts_on' => 'date',
-            'ends_on' => 'date',
+            'starts_on' => DateOnly::class,
+            'ends_on' => DateOnly::class,
             'marks_open' => 'boolean',
             'results_published_at' => 'datetime',
         ];

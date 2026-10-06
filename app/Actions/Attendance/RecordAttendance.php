@@ -2,6 +2,8 @@
 
 namespace App\Actions\Attendance;
 
+use App\Actions\Requests\ApplyAbsenceExcuse;
+use App\Enums\AttendanceKind;
 use App\Enums\Permission;
 use App\Events\StudentsMarkedAbsent;
 use App\Models\AttendanceCode;
@@ -46,12 +48,19 @@ class RecordAttendance
             }
         }
 
-        [$saved, $toNotify] = DB::transaction(function () use ($section, $date, $period, $rows, $by, $codes) {
+        // Absences already covered by an approved excuse are saved as excused.
+        $excused = ApplyAbsenceExcuse::excusedStudents(array_column($rows, 'student_id'), $date);
+        $excusedCode = $excused ? $codes->first(fn (AttendanceCode $c) => $c->id === ApplyAbsenceExcuse::excusedCodeId()) : null;
+
+        [$saved, $toNotify] = DB::transaction(function () use ($section, $date, $period, $rows, $by, $codes, $excused, $excusedCode) {
             $saved = collect();
             $toNotify = collect();
 
             foreach ($rows as $row) {
                 $code = $codes[$row['code']];
+                if ($excusedCode && isset($excused[$row['student_id']]) && $code->kind === AttendanceKind::Absent) {
+                    $code = $excusedCode;
+                }
 
                 $record = AttendanceRecord::query()->firstOrNew([
                     'student_id' => $row['student_id'],

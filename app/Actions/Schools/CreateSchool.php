@@ -4,6 +4,7 @@ namespace App\Actions\Schools;
 
 use App\Enums\SchoolRole;
 use App\Models\AttendanceCode;
+use App\Models\BehaviourCategory;
 use App\Models\Campus;
 use App\Models\GradeLevel;
 use App\Models\GradingScale;
@@ -44,6 +45,7 @@ class CreateSchool
                 $this->seedAttendanceCodes();
                 $this->seedPeriods();
                 $this->seedGradingScales();
+                BehaviourCategory::seedDefaults();
             });
 
             $this->provisionRoles->handle($school);

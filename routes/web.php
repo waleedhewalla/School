@@ -7,11 +7,13 @@ use App\Http\Controllers\Web\AdmissionWindowController;
 use App\Http\Controllers\Web\AnnouncementController;
 use App\Http\Controllers\Web\ApplyController;
 use App\Http\Controllers\Web\AttendanceController;
+use App\Http\Controllers\Web\BehaviourController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
 use App\Http\Controllers\Web\ExportController;
 use App\Http\Controllers\Web\GradingSetupController;
 use App\Http\Controllers\Web\GuardianLookupController;
+use App\Http\Controllers\Web\HomeworkController;
 use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\MarksController;
@@ -19,6 +21,7 @@ use App\Http\Controllers\Web\PasswordResetController;
 use App\Http\Controllers\Web\PlatformController;
 use App\Http\Controllers\Web\PortalController;
 use App\Http\Controllers\Web\PromotionController;
+use App\Http\Controllers\Web\RequestsController;
 use App\Http\Controllers\Web\ResultsController;
 use App\Http\Controllers\Web\SchoolSwitchController;
 use App\Http\Controllers\Web\SettingsController;
@@ -146,6 +149,36 @@ Route::middleware('auth')->group(function () {
             Route::get('/exports/attendance', [ExportController::class, 'attendance'])->name('exports.attendance');
             Route::get('/exports/results', [ExportController::class, 'results'])->name('exports.results');
         });
+
+        // Homework: teachers for their subjects (checked in the controller), families read theirs.
+        Route::get('/homework', [HomeworkController::class, 'index'])->name('homework.index');
+        Route::post('/homework', [HomeworkController::class, 'store'])->middleware('throttle:30,1')->name('homework.store');
+        Route::delete('/homework/{homework}', [HomeworkController::class, 'destroy'])->name('homework.destroy');
+        Route::get('/homework/{homework}/attachment', [HomeworkController::class, 'attachment'])->name('homework.attachment');
+        Route::get('/my/homework', [HomeworkController::class, 'mine'])->name('homework.mine');
+
+        // Behaviour: teachers for students they teach, counsellors and managers for all.
+        Route::get('/behaviour', [BehaviourController::class, 'index'])->name('behaviour.index');
+        Route::post('/behaviour', [BehaviourController::class, 'store'])->middleware('throttle:60,1')->name('behaviour.store');
+        Route::delete('/behaviour/{incident}', [BehaviourController::class, 'destroy'])->name('behaviour.destroy');
+        Route::middleware('can:'.Permission::BehaviourManage)->group(function () {
+            Route::get('/behaviour/categories', [BehaviourController::class, 'categories'])->name('behaviour.categories');
+            Route::post('/behaviour/categories', [BehaviourController::class, 'saveCategory'])->name('behaviour.categories.store');
+            Route::put('/behaviour/categories/{category}', [BehaviourController::class, 'saveCategory'])->name('behaviour.categories.update');
+            Route::delete('/behaviour/categories/{category}', [BehaviourController::class, 'destroyCategory'])->name('behaviour.categories.destroy');
+        });
+
+        // Absence excuses (guardians ask, attendance managers decide) and staff leave.
+        Route::get('/my/excuses', [RequestsController::class, 'myExcuses'])->name('excuses.mine');
+        Route::post('/my/excuses', [RequestsController::class, 'storeExcuse'])->middleware('throttle:10,1')->name('excuses.store');
+        Route::get('/excuses', [RequestsController::class, 'excuses'])->name('excuses.index');
+        Route::post('/excuses/{excuse}/review', [RequestsController::class, 'reviewExcuse'])->name('excuses.review');
+        Route::get('/excuses/{excuse}/attachment', [RequestsController::class, 'excuseAttachment'])->name('excuses.attachment');
+        Route::get('/my/leave', [RequestsController::class, 'myLeave'])->name('leave.mine');
+        Route::post('/my/leave', [RequestsController::class, 'storeLeave'])->middleware('throttle:10,1')->name('leave.store');
+        Route::get('/leave', [RequestsController::class, 'leave'])->name('leave.index');
+        Route::post('/leave/{leave}/review', [RequestsController::class, 'reviewLeave'])->name('leave.review');
+        Route::get('/leave/{leave}/attachment', [RequestsController::class, 'leaveAttachment'])->name('leave.attachment');
 
         Route::get('/announcements', [AnnouncementController::class, 'index'])
             ->middleware('can:'.Permission::AcademicStructureView)->name('announcements.index');

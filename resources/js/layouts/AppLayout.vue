@@ -19,6 +19,8 @@ const groups = computed(() => [
         items: [
             { href: '/dashboard', label: t('Dashboard'), show: can.value['students.view'] || can.value['attendance.record'] },
             { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
+            { href: '/my/homework', label: t('Homework'), show: !can.value['students.view'] },
+            { href: '/my/excuses', label: t('Absence excuses'), show: !can.value['students.view'] },
             { href: '/announcements', label: t('Announcements'), show: can.value['academic-structure.view'] },
         ],
     },
@@ -37,6 +39,10 @@ const groups = computed(() => [
             // Teachers get their own week; managers and office staff see section timetables.
             { href: '/my/timetable', label: t('My timetable'), show: can.value['attendance.record'] && !can.value['timetable.manage'] },
             { href: '/timetable', label: t('Timetable'), show: can.value['timetable.manage'] || (can.value['academic-structure.view'] && !can.value['attendance.record']) },
+            { href: '/excuses', label: t('Absence excuses'), show: can.value['attendance.manage'] },
+            { href: '/homework', label: t('Homework'), show: can.value['homework.assign'] },
+            { href: '/behaviour', label: t('Behaviour'), show: can.value['behaviour.record'] },
+            { href: '/my/leave', label: t('My leave'), show: can.value['academic-structure.view'] },
         ],
     },
     {
@@ -53,6 +59,7 @@ const groups = computed(() => [
             { href: '/exports', label: t('Reports and exports'), show: can.value['students.manage'] || can.value['grades.view'] || can.value['attendance.view'] },
             { href: '/setup/years', match: '/setup', label: t('School setup'), show: can.value['academic-structure.manage'] },
             { href: '/staff', label: t('Staff'), show: can.value['staff.manage'] },
+            { href: '/leave', label: t('Staff leave'), show: can.value['staff.manage'] },
             { href: '/users', label: t('Users'), show: can.value['members.manage'] },
             {
                 href: can.value['school.manage'] ? '/settings/school' : (can.value['timetable.manage'] ? '/settings/periods' : '/settings/grading'),

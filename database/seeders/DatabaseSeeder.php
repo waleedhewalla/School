@@ -12,12 +12,17 @@ use App\Actions\Students\AdmitStudent;
 use App\Actions\Timetable\PlaceLesson;
 use App\Enums\ApplicationStatus;
 use App\Enums\SchoolRole;
+use App\Models\AbsenceExcuse;
 use App\Models\AcademicYear;
 use App\Models\AdmissionWindow;
 use App\Models\Announcement;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
+use App\Models\BehaviourCategory;
+use App\Models\BehaviourIncident;
 use App\Models\GradeLevel;
+use App\Models\Homework;
+use App\Models\LeaveRequest;
 use App\Models\Period;
 use App\Models\ReportCardComment;
 use App\Models\Section;
@@ -100,7 +105,39 @@ class DatabaseSeeder extends Seeder
 
             $this->seedStudents($year, $teacher, $parent);
             $this->seedAdmissions($admin);
+            $this->seedSchoolLife($year, $teacher, $parent, $admin);
         });
+    }
+
+    /** Homework, behaviour records, a pending excuse and a pending leave request in grade 1 أ. */
+    private function seedSchoolLife(AcademicYear $year, User $teacher, User $parent, User $admin): void
+    {
+        $section = Section::query()->where('academic_year_id', $year->id)->where('name', 'أ')
+            ->whereHas('gradeLevel', fn ($q) => $q->where('name_en', 'Grade 1'))->firstOrFail();
+        $subject = fn (string $code) => Subject::query()->where('code', $code)->value('id');
+
+        Homework::query()->create(['section_id' => $section->id, 'subject_id' => $subject('MATH'), 'created_by' => $teacher->id,
+            'title' => 'حل تمارين الجمع صفحة 24', 'body' => 'التمارين 1 إلى 6 في كتاب الطالب.', 'due_on' => today()->addDays(2)]);
+        Homework::query()->create(['section_id' => $section->id, 'subject_id' => $subject('ARB'), 'created_by' => $teacher->id,
+            'title' => 'قراءة درس "أسرتي" وكتابة 3 كلمات جديدة', 'due_on' => today()->addDays(4)]);
+
+        $students = Student::query()->inSection($section->id)->orderBy('id')->get();
+        $category = fn (int|string $degreeOrKind) => is_int($degreeOrKind)
+            ? BehaviourCategory::query()->where('degree', $degreeOrKind)->first()
+            : BehaviourCategory::query()->where('kind', $degreeOrKind)->first();
+        foreach ([[0, 1, 3], [1, 'positive', 1], [2, 2, 2], [0, 'positive', 0]] as [$i, $which, $daysAgo]) {
+            BehaviourIncident::query()->create([
+                'academic_year_id' => $year->id, 'student_id' => $students[$i]->id, 'behaviour_category_id' => $category($which)->id,
+                'recorded_by' => $teacher->id, 'occurred_on' => today()->subDays($daysAgo),
+            ]);
+        }
+
+        $child = Student::query()->guardedBy($parent)->first();
+        AbsenceExcuse::query()->create(['student_id' => $child->id, 'submitted_by' => $parent->id,
+            'from_date' => today()->subDay(), 'to_date' => today()->subDay(), 'reason' => 'مراجعة في المستشفى']);
+
+        LeaveRequest::query()->create(['staff_member_id' => StaffMember::query()->where('user_id', $teacher->id)->value('id'),
+            'type' => 'annual', 'from_date' => today()->addDays(10), 'to_date' => today()->addDays(12), 'reason' => 'ظرف عائلي']);
     }
 
     /** Next year's intake: KG1 and grade 1 windows open now, with applications at different steps. */

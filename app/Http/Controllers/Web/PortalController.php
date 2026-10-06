@@ -3,9 +3,12 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicYear;
 use App\Models\Announcement;
+use App\Models\BehaviourIncident;
 use App\Models\Student;
 use App\Models\Term;
+use App\Support\BehaviourScore;
 use App\Support\Grades\TermResults;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,6 +30,11 @@ class PortalController extends Controller
         $published = Term::query()->whereNotNull('results_published_at')
             ->whereHas('academicYear', fn ($q) => $q->where('is_current', true))->orderBy('sequence')->get();
 
+        $year = AcademicYear::query()->where('is_current', true)->first();
+        $scores = $year ? BehaviourScore::forStudents($children->pluck('id'), $year->id) : collect();
+        $incidents = $year ? BehaviourIncident::query()->with('category')->whereIn('student_id', $children->pluck('id'))
+            ->where('academic_year_id', $year->id)->latest('occurred_on')->get()->groupBy('student_id') : collect();
+
         $sectionIds = $children->map(fn (Student $c) => $c->currentEnrollment?->section_id)->filter()->unique()->values()->all();
 
         return Inertia::render('Portal/Children', [
@@ -47,6 +55,13 @@ class PortalController extends Controller
                 })->values() : [],
                 'id' => $child->id,
                 'name' => $child->name,
+                'behaviour' => [
+                    'score' => $scores[$child->id]['score'] ?? null,
+                    'recent' => $incidents->get($child->id, collect())->take(5)->map(fn (BehaviourIncident $i) => [
+                        'date' => $i->occurred_on->toDateString(), 'category' => $i->category->name,
+                        'kind' => $i->category->kind, 'points' => $i->category->signedPoints(),
+                    ])->values(),
+                ],
                 'student_number' => $child->student_number,
                 'class' => $child->currentEnrollment
                     ? $child->currentEnrollment->gradeLevel->name.($child->currentEnrollment->section ? ' / '.$child->currentEnrollment->section->name : '')

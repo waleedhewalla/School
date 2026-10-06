@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Enums\EnrollmentStatus;
 use App\Enums\Gender;
 use App\Models\Concerns\BelongsToSchool;
@@ -35,7 +36,7 @@ class Student extends Model
     {
         return [
             'gender' => Gender::class,
-            'date_of_birth' => 'date',
+            'date_of_birth' => DateOnly::class,
         ];
     }
 
@@ -104,6 +105,12 @@ class Student extends Model
     }
 
     /** @param  Builder<Student>  $query */
+    /** @param  Builder<Student>  $query  children of a guardian's login */
+    public function scopeGuardedBy(Builder $query, User $user): void
+    {
+        $query->whereHas('guardians', fn (Builder $q) => $q->where('guardians.user_id', $user->getKey()));
+    }
+
     public function scopeInSection(Builder $query, int $sectionId): void
     {
         $query->whereHas('enrollments', fn (Builder $q) => $q

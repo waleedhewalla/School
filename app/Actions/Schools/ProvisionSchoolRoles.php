@@ -38,9 +38,9 @@ class ProvisionSchoolRoles
     }
 
     /**
-     * For existing schools after an upgrade: gives every default role the
-     * default permissions it lacks. Never removes anything, so a school's
-     * own role edits survive.
+     * For existing schools after an upgrade: creates default roles a school
+     * lacks and gives every default role the default permissions it lacks.
+     * Never removes anything, so a school's own role edits survive.
      */
     public static function grantMissingDefaults(): void
     {
@@ -48,14 +48,17 @@ class ProvisionSchoolRoles
             Permission::findOrCreate($name, 'web');
         }
 
-        foreach (SchoolRole::cases() as $roleName) {
-            Role::query()->where('name', $roleName->value)->each(function (Role $role) use ($roleName) {
+        School::query()->withTrashed()->each(function (School $school) {
+            foreach (SchoolRole::cases() as $roleName) {
+                $role = Role::query()->firstOrCreate([
+                    'name' => $roleName->value, 'guard_name' => 'web', 'school_id' => $school->getKey(),
+                ]);
                 $missing = array_diff($roleName->defaultPermissions(), $role->permissions()->pluck('name')->all());
                 if ($missing) {
                     $role->givePermissionTo($missing);
                 }
-            });
-        }
+            }
+        });
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

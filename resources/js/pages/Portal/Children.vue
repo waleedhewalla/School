@@ -42,6 +42,19 @@ const page = usePage();
                     </li>
                     <li v-if="!child.attendance.length" class="text-muted">{{ t('No attendance recorded yet.') }}</li>
                 </ul>
+
+                <template v-if="child.behaviour.score !== null">
+                    <h3 class="mb-2 mt-4 flex items-center gap-2 text-sm font-semibold">
+                        {{ t('Behaviour') }}
+                        <span class="ms-auto rounded bg-surface px-2 tabular-nums">{{ t('Score :n', { n: child.behaviour.score }) }}</span>
+                    </h3>
+                    <ul class="space-y-1 text-sm">
+                        <li v-for="(b, i) in child.behaviour.recent" :key="i" class="flex items-center justify-between gap-2">
+                            <span>{{ formatDate(b.date, page.props.locale) }} · {{ b.category }}</span>
+                            <span class="font-semibold tabular-nums" :class="b.points > 0 ? 'text-accent' : 'text-danger'" dir="ltr">{{ b.points > 0 ? '+' : '' }}{{ b.points }}</span>
+                        </li>
+                    </ul>
+                </template>
             </section>
         </div>
     </AppLayout>

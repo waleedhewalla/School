@@ -13,6 +13,7 @@ enum SchoolRole: string
     case Registrar = 'registrar';
     case Teacher = 'teacher';
     case Accountant = 'accountant';
+    case Counselor = 'counselor';
     case Guardian = 'guardian';
     case Student = 'student';
 
@@ -26,6 +27,7 @@ enum SchoolRole: string
                 Permission::StudentsView, Permission::StudentsManage, Permission::StaffView,
                 Permission::AttendanceView, Permission::AttendanceManage,
                 Permission::GradesView, Permission::GradesManage, Permission::AuditView, Permission::TimetableManage, Permission::AnnouncementsManage, Permission::AdmissionsManage, Permission::StaffManage,
+                Permission::HomeworkAssign, Permission::BehaviourRecord, Permission::BehaviourManage,
             ],
             self::Registrar => [
                 Permission::AcademicStructureView, Permission::StudentsView,
@@ -37,6 +39,12 @@ enum SchoolRole: string
                 Permission::AcademicStructureView, Permission::StudentsView,
                 Permission::AttendanceRecord,
                 Permission::GradesView, Permission::GradesRecord,
+                Permission::HomeworkAssign, Permission::BehaviourRecord,
+            ],
+            // Student counsellor (المرشد الطلابي): behaviour and attendance follow-up for every student.
+            self::Counselor => [
+                Permission::AcademicStructureView, Permission::StudentsView, Permission::AttendanceView,
+                Permission::BehaviourRecord, Permission::BehaviourManage,
             ],
             self::Accountant => [
                 Permission::StudentsView, Permission::FinanceView, Permission::FinanceManage,

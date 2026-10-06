@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\DateOnly;
 use App\Enums\ApplicationStatus;
 use App\Enums\Gender;
 use App\Models\Concerns\BelongsToSchool;
@@ -36,7 +37,7 @@ class Application extends Model
             'status' => ApplicationStatus::class,
             'token' => 'encrypted',
             'gender' => Gender::class,
-            'date_of_birth' => 'date',
+            'date_of_birth' => DateOnly::class,
             'from_private_school' => 'boolean',
             'has_sibling' => 'boolean',
             'noor_transfer_done' => 'boolean',

@@ -51,6 +51,15 @@ final class Permission
 
     public const AdmissionsManage = 'admissions.manage';
 
+    /** Post homework for subjects the user teaches (or any, with academic-structure.manage). */
+    public const HomeworkAssign = 'homework.assign';
+
+    /** Record behaviour for students the user teaches. */
+    public const BehaviourRecord = 'behaviour.record';
+
+    /** Record behaviour for any student and edit the behaviour categories. */
+    public const BehaviourManage = 'behaviour.manage';
+
     public const AuditView = 'audit.view';
 
     /** @return list<string> */

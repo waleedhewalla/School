@@ -98,5 +98,14 @@
     "campus.male": "Boys",
     "campus.mixed": "Mixed",
     "school_status.active": "Active",
-    "school_status.suspended": "Suspended"
+    "school_status.suspended": "Suspended",
+    "request.pending": "Pending",
+    "request.approved": "Approved",
+    "request.rejected": "Rejected",
+    "leave.annual": "Annual",
+    "leave.sick": "Sick",
+    "leave.emergency": "Emergency",
+    "leave.exam": "Exam",
+    "leave.other": "Other",
+    "role.counselor": "Student counsellor"
 }
