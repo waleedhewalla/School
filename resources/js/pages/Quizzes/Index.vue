@@ -1,9 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue';
-import { Link, useForm } from '@inertiajs/vue3';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import FieldError from '../../components/FieldError.vue';
-import { useT } from '../../lib/i18n';
+import { useT, formatDateTime } from '../../lib/i18n';
 
 const props = defineProps({ quizzes: Array, choices: Array, subjects: Array });
 const t = useT();
@@ -17,7 +17,7 @@ const form = useForm({
 const choice = computed(() => props.choices.find((c) => c.section_id === Number(form.section_id)));
 const subjectOptions = computed(() => (choice.value?.subjects ? props.subjects.filter((s) => choice.value.subjects.includes(s.id)) : props.subjects));
 const save = () => form.transform((d) => ({ ...d, time_limit_minutes: d.time_limit_minutes || null })).post('/quizzes');
-const when = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const when = (iso) => formatDateTime(iso, usePage().props.locale);
 </script>
 
 <template>

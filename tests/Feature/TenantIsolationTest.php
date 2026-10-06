@@ -22,6 +22,8 @@ use App\Models\BusRoute;
 use App\Models\Campus;
 use App\Models\ClinicVisit;
 use App\Models\Enrollment;
+use App\Models\ExternalExam;
+use App\Models\ExternalExamResult;
 use App\Models\Family;
 use App\Models\GradeLevel;
 use App\Models\GradingBand;
@@ -35,10 +37,16 @@ use App\Models\LeaveRequest;
 use App\Models\LibraryBook;
 use App\Models\LibraryLoan;
 use App\Models\MessageLog;
+use App\Models\PayrollLine;
+use App\Models\PayrollRun;
 use App\Models\Period;
+use App\Models\Quiz;
+use App\Models\QuizAttempt;
+use App\Models\QuizQuestion;
 use App\Models\ReportCardComment;
 use App\Models\RouteStop;
 use App\Models\Section;
+use App\Models\StaffContract;
 use App\Models\StaffMember;
 use App\Models\Stage;
 use App\Models\Student;
@@ -75,6 +83,8 @@ class TenantIsolationTest extends TestCase
             [Homework::class], [BehaviourCategory::class], [BehaviourIncident::class], [AbsenceExcuse::class], [LeaveRequest::class],
             [HealthRecord::class], [ClinicVisit::class], [LibraryBook::class], [LibraryLoan::class],
             [Bus::class], [BusRoute::class], [RouteStop::class], [StudentTransport::class], [InventoryItem::class],
+            [Quiz::class], [QuizQuestion::class], [QuizAttempt::class], [StaffContract::class], [PayrollRun::class], [PayrollLine::class],
+            [ExternalExam::class], [ExternalExamResult::class],
         ];
     }
 

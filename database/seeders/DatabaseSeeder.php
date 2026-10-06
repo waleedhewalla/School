@@ -23,6 +23,8 @@ use App\Models\BehaviourIncident;
 use App\Models\Bus;
 use App\Models\BusRoute;
 use App\Models\ClinicVisit;
+use App\Models\ExternalExam;
+use App\Models\ExternalExamResult;
 use App\Models\GradeLevel;
 use App\Models\HealthRecord;
 use App\Models\Homework;
@@ -30,15 +32,19 @@ use App\Models\InventoryItem;
 use App\Models\LeaveRequest;
 use App\Models\LibraryBook;
 use App\Models\LibraryLoan;
+use App\Models\PayrollRun;
 use App\Models\Period;
+use App\Models\Quiz;
 use App\Models\ReportCardComment;
 use App\Models\Section;
+use App\Models\StaffContract;
 use App\Models\StaffMember;
 use App\Models\Student;
 use App\Models\StudentTransport;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\User;
+use App\Support\Payroll\PayrollCalculator;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
@@ -115,7 +121,42 @@ class DatabaseSeeder extends Seeder
             $this->seedAdmissions($admin);
             $this->seedSchoolLife($year, $teacher, $parent, $admin);
             $this->seedServices($teacher);
+            $this->seedWaveFour($year, $teacher, $admin);
         });
+    }
+
+    /** A student login with an open quiz, staff pay with last month's payroll, and a Nafes result set. */
+    private function seedWaveFour(AcademicYear $year, User $teacher, User $admin): void
+    {
+        $section = Section::query()->where('academic_year_id', $year->id)->where('name', 'أ')
+            ->whereHas('gradeLevel', fn ($q) => $q->where('name_en', 'Grade 1'))->firstOrFail();
+        $students = Student::query()->inSection($section->id)->orderBy('id')->get();
+
+        $studentUser = User::factory()->create(['name' => $students[3]->first_name_ar.' (طالب)', 'email' => 'student@example.com', 'locale' => 'ar']);
+        app(AddSchoolMember::class)->handle(app(CurrentSchool::class)->get(), $studentUser, SchoolRole::Student);
+        $students[3]->forceFill(['user_id' => $studentUser->id])->save();
+
+        $quiz = Quiz::query()->create(['section_id' => $section->id, 'subject_id' => Subject::query()->where('code', 'MATH')->value('id'),
+            'created_by' => $teacher->id, 'title' => 'اختبار قصير: الجمع', 'opens_at' => now()->subHour(), 'closes_at' => now()->addDays(3),
+            'time_limit_minutes' => 15, 'published' => true]);
+        $quiz->questions()->createMany([
+            ['type' => 'single', 'body' => '٣ + ٤ = ؟', 'options' => ['٦', '٧', '٨'], 'correct' => [1], 'points' => 1, 'sequence' => 1],
+            ['type' => 'true_false', 'body' => '٥ + ٥ = ١٠', 'correct' => [true], 'points' => 1, 'sequence' => 2],
+            ['type' => 'multiple', 'body' => 'اختر الأعداد الأكبر من ٥', 'options' => ['٣', '٦', '٩'], 'correct' => [1, 2], 'points' => 2, 'sequence' => 3],
+        ]);
+
+        foreach (StaffMember::query()->get() as $i => $staff) {
+            StaffContract::query()->create(['staff_member_id' => $staff->id, 'is_saudi' => $i === 0, 'basic_salary' => 7000 + $i * 1000,
+                'housing_allowance' => 1750 + $i * 250, 'transport_allowance' => 700, 'bank' => 'مصرف الراجحي', 'iban' => 'SA03800000006080101675'.str_pad((string) $i, 2, '0', STR_PAD_LEFT)]);
+        }
+        $run = PayrollRun::query()->create(['month' => now()->subMonth()->format('Y-m'), 'status' => PayrollRun::APPROVED, 'created_by' => $admin->id, 'approved_by' => $admin->id, 'approved_at' => now()->subDays(5)]);
+        StaffContract::query()->each(fn (StaffContract $c) => $run->lines()->create(['staff_member_id' => $c->staff_member_id] + PayrollCalculator::lineFor($c)));
+
+        $exam = ExternalExam::query()->create(['academic_year_id' => $year->id, 'grade_level_id' => $section->grade_level_id, 'type' => 'nafes',
+            'name' => 'نافس التجريبي — قراءة', 'held_on' => today()->subDays(10), 'max_score' => 100]);
+        foreach ($students as $i => $student) {
+            ExternalExamResult::query()->create(['external_exam_id' => $exam->id, 'student_id' => $student->id, 'score' => [92, 78, 85, 64, 88, 71, 95, 58, 80, 76, 90, 67][$i % 12]]);
+        }
     }
 
     /** A bus route, library books with loans, inventory and a few health records. */

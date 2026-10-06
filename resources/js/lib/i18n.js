@@ -28,3 +28,11 @@ export function formatDate(value, locale) {
 
 /** Wraps codes like 1449-0006 so they keep their order inside Arabic text. */
 export const ltr = (value) => `\u2066${value}\u2069`;
+
+/** Formats an ISO date-time for display in the active language (Gregorian, Latin digits). */
+export function formatDateTime(value, locale, withYear = false) {
+    if (!value) return '';
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA-u-ca-gregory-nu-latn' : 'en-GB', {
+        weekday: 'short', day: 'numeric', month: 'short', ...(withYear ? { year: 'numeric' } : {}), hour: '2-digit', minute: '2-digit',
+    }).format(new Date(value));
+}

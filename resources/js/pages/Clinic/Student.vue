@@ -1,12 +1,12 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import HealthCardForm from '../../components/HealthCardForm.vue';
-import { useT } from '../../lib/i18n';
+import { useT, formatDateTime } from '../../lib/i18n';
 
 defineProps({ student: Object, record: Object, visits: Array, outcomes: Array });
 const t = useT();
-const time = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const time = (iso) => formatDateTime(iso, usePage().props.locale, true);
 </script>
 
 <template>

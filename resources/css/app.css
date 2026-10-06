@@ -24,6 +24,8 @@
     --color-danger-soft: #fdecea;
     --color-warn: #a15c07;
     --color-warn-soft: #fdf3e2;
+    /* Single-series chart marks (checked for chroma and contrast against the card). */
+    --color-chart: #0a8462;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,6 +42,7 @@
         --color-danger-soft: #3a1d1a;
         --color-warn: #f0b45a;
         --color-warn-soft: #3a2b14;
+        --color-chart: #38a886;
     }
 }
 

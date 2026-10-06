@@ -1,11 +1,11 @@
 <script setup>
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
-import { useT } from '../../lib/i18n';
+import { useT, formatDateTime } from '../../lib/i18n';
 
 defineProps({ children: Array });
 const t = useT();
-const when = (iso) => new Date(iso).toLocaleString(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const when = (iso) => formatDateTime(iso, usePage().props.locale);
 const badge = { open: 'bg-accent-soft text-accent', upcoming: 'bg-surface text-muted', done: 'bg-surface text-ink', missed: 'bg-danger-soft text-danger' };
 </script>
 

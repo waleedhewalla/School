@@ -19,6 +19,8 @@ use App\Models\BehaviourIncident;
 use App\Models\Bus;
 use App\Models\BusRoute;
 use App\Models\ClinicVisit;
+use App\Models\ExternalExam;
+use App\Models\ExternalExamResult;
 use App\Models\GradeLevel;
 use App\Models\HealthRecord;
 use App\Models\Homework;
@@ -28,10 +30,14 @@ use App\Models\LeaveRequest;
 use App\Models\LibraryBook;
 use App\Models\LibraryLoan;
 use App\Models\MessageLog;
+use App\Models\PayrollRun;
 use App\Models\Period;
+use App\Models\Quiz;
+use App\Models\QuizAttempt;
 use App\Models\ReportCardComment;
 use App\Models\School;
 use App\Models\Section;
+use App\Models\StaffContract;
 use App\Models\StaffMember;
 use App\Models\Student;
 use App\Models\StudentTransport;
@@ -185,6 +191,17 @@ trait CreatesSchools
             $stop = $route->stops()->create(['name' => 'محطة', 'sequence' => 1]);
             StudentTransport::query()->create(['student_id' => $students[1]->id, 'bus_route_id' => $route->id, 'route_stop_id' => $stop->id]);
             InventoryItem::query()->create(['name' => 'طاولة', 'quantity' => 10]);
+
+            $quiz = Quiz::query()->create(['section_id' => $sectionA->id, 'subject_id' => $subject->id, 'title' => 'اختبار',
+                'opens_at' => now(), 'closes_at' => now()->addDay(), 'published' => true]);
+            $quiz->questions()->create(['type' => 'true_false', 'body' => 'سؤال', 'correct' => [true], 'points' => 1]);
+            QuizAttempt::query()->create(['quiz_id' => $quiz->id, 'student_id' => $students[0]->id, 'started_at' => now()]);
+            StaffContract::query()->create(['staff_member_id' => $staff->id, 'basic_salary' => 5000]);
+            $run = PayrollRun::query()->create(['month' => '2026-09', 'status' => 'draft']);
+            $run->lines()->create(['staff_member_id' => $staff->id, 'basic' => 5000, 'housing' => 0, 'transport' => 0, 'other' => 0,
+                'gosi_employee' => 0, 'gosi_employer' => 0, 'net' => 5000]);
+            $exam = ExternalExam::query()->create(['academic_year_id' => $year->id, 'type' => 'nafes', 'name' => 'نافس']);
+            ExternalExamResult::query()->create(['external_exam_id' => $exam->id, 'student_id' => $students[0]->id, 'score' => 80]);
 
         });
     }

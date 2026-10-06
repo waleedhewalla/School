@@ -36,7 +36,7 @@ const confirmSubmit = () => confirm(t('Submit your answers? You cannot change th
         <p v-if="quiz.instructions" class="mb-4 text-sm text-muted">{{ quiz.instructions }}</p>
 
         <form class="space-y-4" @submit.prevent="confirmSubmit">
-            <fieldset v-for="(q, i) in questions" :key="q.id" class="card">
+            <div v-for="(q, i) in questions" :key="q.id" class="card"><fieldset>
                 <legend class="mb-3 flex w-full gap-2">
                     <span class="font-semibold tabular-nums">{{ i + 1 }}.</span>
                     <span class="min-w-0 flex-1 whitespace-pre-line">{{ q.body }}</span>
@@ -57,7 +57,7 @@ const confirmSubmit = () => confirm(t('Submit your answers? You cannot change th
                     <label class="flex items-center gap-2 rounded-lg border border-line px-4 py-2"><input v-model="answers[q.id]" type="radio" :name="`q${q.id}`" :value="false"> {{ t('False') }}</label>
                 </div>
                 <input v-else v-model="answers[q.id]" class="input" maxlength="500" :aria-label="t('Your answer')">
-            </fieldset>
+            </fieldset></div>
             <button class="btn-primary w-full sm:w-auto" :disabled="sending">{{ t('Submit answers') }}</button>
         </form>
     </AppLayout>

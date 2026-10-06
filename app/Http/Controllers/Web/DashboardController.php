@@ -26,9 +26,9 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        // Guardians without staff permissions land on their children.
+        // Students land on their quizzes; guardians on their children.
         if (! $user->can(Permission::StudentsView) && ! $user->can(Permission::AttendanceRecord)) {
-            return redirect()->route('portal.children');
+            return redirect()->route(Student::query()->where('user_id', $user->id)->exists() ? 'quizzes.mine' : 'portal.children');
         }
 
         $year = AcademicYear::query()->where('is_current', true)->first();

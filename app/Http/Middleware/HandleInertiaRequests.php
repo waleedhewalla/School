@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enums\Permission;
+use App\Models\Student;
 use App\Support\Locale;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Http\Request;
@@ -39,6 +40,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $user?->only(['id', 'name', 'email', 'locale']),
                 'platform' => fn () => (bool) $user?->platformAccessAllowed(),
+                // A student's own login (not a guardian): the menu shows their own pages.
+                'student' => fn () => $user !== null && $school() !== null && Student::query()->where('user_id', $user->id)->exists(),
             ],
             'school' => fn () => $school()?->only(['id', 'slug', 'name']),
             'schools' => fn () => $user?->schools()->wherePivot('status', 'active')->get()

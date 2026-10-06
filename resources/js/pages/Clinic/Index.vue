@@ -1,9 +1,9 @@
 <script setup>
 import { ref, watch } from 'vue';
-import { Link, router, useForm } from '@inertiajs/vue3';
+import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import FieldError from '../../components/FieldError.vue';
-import { useT } from '../../lib/i18n';
+import { useT, formatDateTime } from '../../lib/i18n';
 
 const props = defineProps({ visits: Array, alerts: Array, results: Array, search: String, outcomes: Array, today: Number });
 const t = useT();
@@ -21,7 +21,7 @@ const pick = (s) => { picked.value = s; form.student_id = s.id; };
 const save = () => form.transform((d) => ({ ...d, temperature: d.temperature || null })).post('/clinic/visits', {
     preserveScroll: true, onSuccess: () => { form.reset(); picked.value = null; query.value = ''; },
 });
-const time = (iso) => new Date(iso).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const time = (iso) => formatDateTime(iso, usePage().props.locale);
 </script>
 
 <template>

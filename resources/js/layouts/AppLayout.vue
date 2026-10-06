@@ -13,16 +13,19 @@ const menuOpen = ref(false);
 watch(() => page.url, () => { menuOpen.value = false; });
 
 // Grouped navigation; items and empty groups hidden by permission.
+const family = computed(() => !can.value['students.view'] && !page.props.auth.student);
+const student = computed(() => !!page.props.auth.student);
 const groups = computed(() => [
     {
         label: t('Home'),
         items: [
             { href: '/dashboard', label: t('Dashboard'), show: can.value['students.view'] || can.value['attendance.record'] },
-            { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
-            { href: '/my/homework', label: t('Homework'), show: !can.value['students.view'] },
-            { href: '/my/quizzes', label: t('Quizzes'), show: !can.value['students.view'] },
-            { href: '/my/excuses', label: t('Absence excuses'), show: !can.value['students.view'] },
-            { href: '/my/health', label: t('Health information'), show: !can.value['students.view'] },
+            { href: '/analytics', label: t('Analytics'), show: can.value['attendance.manage'] || can.value['grades.manage'] },
+            { href: '/my/children', label: t('My children'), show: family.value },
+            { href: '/my/homework', label: t('Homework'), show: family.value || student.value },
+            { href: '/my/quizzes', label: t('Quizzes'), show: family.value || student.value },
+            { href: '/my/excuses', label: t('Absence excuses'), show: family.value },
+            { href: '/my/health', label: t('Health information'), show: family.value },
             { href: '/announcements', label: t('Announcements'), show: can.value['academic-structure.view'] },
         ],
     },
@@ -46,6 +49,7 @@ const groups = computed(() => [
             { href: '/quizzes', label: t('Quizzes'), show: can.value['homework.assign'] },
             { href: '/behaviour', label: t('Behaviour'), show: can.value['behaviour.record'] },
             { href: '/my/leave', label: t('My leave'), show: can.value['academic-structure.view'] },
+            { href: '/my/payslips', label: t('My payslips'), show: can.value['academic-structure.view'] },
         ],
     },
     {
@@ -63,6 +67,7 @@ const groups = computed(() => [
             { href: '/marks', label: t('Marks'), show: can.value['grades.record'] || can.value['grades.manage'] },
             { href: '/results', label: t('Results'), show: can.value['grades.view'] },
             { href: '/grading', label: t('Assessments'), show: can.value['grades.manage'] },
+            { href: '/external-exams', label: t('National tests'), show: can.value['grades.view'] && can.value['students.view'] },
         ],
     },
     {
@@ -72,6 +77,7 @@ const groups = computed(() => [
             { href: '/setup/years', match: '/setup', label: t('School setup'), show: can.value['academic-structure.manage'] },
             { href: '/staff', label: t('Staff'), show: can.value['staff.manage'] },
             { href: '/leave', label: t('Staff leave'), show: can.value['staff.manage'] },
+            { href: '/payroll', label: t('Payroll'), show: can.value['payroll.manage'] },
             { href: '/users', label: t('Users'), show: can.value['members.manage'] },
             {
                 href: can.value['school.manage'] ? '/settings/school' : (can.value['timetable.manage'] ? '/settings/periods' : '/settings/grading'),

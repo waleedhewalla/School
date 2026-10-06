@@ -127,5 +127,11 @@
     "quiz_state.open": "Open now",
     "quiz_state.upcoming": "Upcoming",
     "quiz_state.done": "Submitted",
-    "quiz_state.missed": "Missed"
+    "quiz_state.missed": "Missed",
+    "payroll_status.draft": "Draft",
+    "payroll_status.approved": "Approved",
+    "exam_type.nafes": "Nafes",
+    "exam_type.tahsili": "Qiyas Tahsili",
+    "exam_type.qudrat": "Qiyas Qudrat",
+    "exam_type.other": "Other"
 }

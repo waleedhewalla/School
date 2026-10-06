@@ -4,6 +4,7 @@ use App\Enums\Permission;
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AdmissionsController;
 use App\Http\Controllers\Web\AdmissionWindowController;
+use App\Http\Controllers\Web\AnalyticsController;
 use App\Http\Controllers\Web\AnnouncementController;
 use App\Http\Controllers\Web\ApplyController;
 use App\Http\Controllers\Web\AttendanceController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Web\ClinicController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
 use App\Http\Controllers\Web\ExportController;
+use App\Http\Controllers\Web\ExternalExamController;
 use App\Http\Controllers\Web\GradingSetupController;
 use App\Http\Controllers\Web\GuardianLookupController;
 use App\Http\Controllers\Web\HomeworkController;
@@ -22,6 +24,7 @@ use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\MarksController;
 use App\Http\Controllers\Web\MyQuizController;
 use App\Http\Controllers\Web\PasswordResetController;
+use App\Http\Controllers\Web\PayrollController;
 use App\Http\Controllers\Web\PlatformController;
 use App\Http\Controllers\Web\PortalController;
 use App\Http\Controllers\Web\PortalInviteController;
@@ -95,6 +98,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('school')->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
+        Route::get('/analytics', AnalyticsController::class)->name('analytics');
 
         // Inside the school context so the menu and permissions render normally.
         Route::get('/account', [AccountController::class, 'show'])->name('account');
@@ -189,6 +193,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/leave', [RequestsController::class, 'leave'])->name('leave.index');
         Route::post('/leave/{leave}/review', [RequestsController::class, 'reviewLeave'])->name('leave.review');
         Route::get('/leave/{leave}/attachment', [RequestsController::class, 'leaveAttachment'])->name('leave.attachment');
+
+        // National tests (Nafes, Qiyas): grades.view to see, grades.manage to enter (checked in the controller).
+        Route::get('/external-exams', [ExternalExamController::class, 'index'])->name('external-exams.index');
+        Route::post('/external-exams', [ExternalExamController::class, 'store'])->name('external-exams.store');
+        Route::get('/external-exams/{exam}', [ExternalExamController::class, 'show'])->name('external-exams.show');
+        Route::delete('/external-exams/{exam}', [ExternalExamController::class, 'destroy'])->name('external-exams.destroy');
+        Route::put('/external-exams/{exam}/results', [ExternalExamController::class, 'saveResults'])->name('external-exams.results');
+        Route::post('/external-exams/{exam}/import', [ExternalExamController::class, 'import'])->middleware('throttle:10,1')->name('external-exams.import');
 
         // Online quizzes: teachers for their classes; students take them, guardians see results.
         Route::get('/quizzes', [QuizController::class, 'index'])->name('quizzes.index');
@@ -309,6 +321,18 @@ Route::middleware('auth')->group(function () {
             Route::get('/staff/assignments', [StaffController::class, 'assignments'])->name('staff.assignments');
             Route::post('/staff/assignments/{section}', [StaffController::class, 'assign'])->name('staff.assign');
         });
+
+        Route::middleware('can:'.Permission::PayrollManage)->group(function () {
+            Route::get('/payroll', [PayrollController::class, 'index'])->name('payroll.index');
+            Route::put('/payroll/contracts/{staff_member}', [PayrollController::class, 'saveContract'])->name('payroll.contracts.save');
+            Route::post('/payroll/runs', [PayrollController::class, 'createRun'])->name('payroll.runs.store');
+            Route::get('/payroll/runs/{run}', [PayrollController::class, 'run'])->name('payroll.run');
+            Route::delete('/payroll/runs/{run}', [PayrollController::class, 'destroyRun'])->name('payroll.runs.destroy');
+            Route::post('/payroll/runs/{run}/approve', [PayrollController::class, 'approve'])->name('payroll.runs.approve');
+            Route::get('/payroll/runs/{run}/export', [PayrollController::class, 'export'])->name('payroll.runs.export');
+            Route::patch('/payroll/lines/{line}', [PayrollController::class, 'updateLine'])->name('payroll.lines.update');
+        });
+        Route::get('/my/payslips', [PayrollController::class, 'myPayslips'])->name('payslips.mine');
 
         Route::middleware('can:'.Permission::SchoolManage)->group(function () {
             Route::get('/settings/school', [SettingsController::class, 'school'])->name('settings.school');
