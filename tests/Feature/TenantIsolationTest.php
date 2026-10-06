@@ -12,6 +12,7 @@ use App\Models\Enrollment;
 use App\Models\Family;
 use App\Models\GradeLevel;
 use App\Models\Guardian;
+use App\Models\MessageLog;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Stage;
@@ -39,7 +40,7 @@ class TenantIsolationTest extends TestCase
             [Term::class], [Section::class], [Subject::class],
             [Family::class], [Student::class], [Guardian::class], [StaffMember::class],
             [Enrollment::class], [TeachingAssignment::class],
-            [AttendanceCode::class], [AttendanceRecord::class],
+            [AttendanceCode::class], [AttendanceRecord::class], [MessageLog::class],
         ];
     }
 

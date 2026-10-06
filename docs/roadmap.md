@@ -33,13 +33,18 @@ Slice 1 ✅
 - [x] Guardian portal (API + web): own children and their attendance only
 - [x] Web screens: dashboard, students list/profile, attendance register, guardian page
 
-Slice 2 — next
-- [ ] Web forms for admission, editing students/guardians, enrollment and promotion
-- [ ] Bulk import from Excel in Noor's column format
-- [ ] Notifications: SMS (Unifonic/Taqnyat), WhatsApp, email behind one interface, wired to the absence event
-- [ ] Timetable: periods, builder, clash detection
+Slice 2 ✅
+- [x] Web forms: admission (with sibling lookup by guardian ID/mobile), edit, move section, withdraw/transfer
+- [x] Year-end promotion screen, one section at a time
+- [x] Excel import in Noor's column layout: preview with per-row errors, then confirm; Hijri birth dates, Arabic name splitting, siblings linked by guardian ID/mobile, missing sections created
+- [x] SMS to guardians on new absence/late (Unifonic or Taqnyat driver, log driver for development), gender-aware Arabic wording, every message logged
 
-Slice 3
+Slice 3 — next
+- [ ] Timetable: periods, builder, clash detection
+- [ ] WhatsApp and email channels; notification settings per school (which codes alert, quiet hours)
+- [ ] Verify Noor column aliases against real exports from pilot schools
+
+Slice 4
 - [ ] Assessments: **grading scales** (validated intervals), **exam rules**, weighted **assessment components**, marks entry window, calculated vs final mark — Frappe, Unifiedtransform, ICTSchool
 - [ ] Arabic report cards (PDF)
 - [ ] Announcements; attendance and grade dashboards

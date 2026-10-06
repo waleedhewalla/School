@@ -14,6 +14,7 @@ const nav = computed(() => [
     { href: '/dashboard', label: t('Dashboard'), show: can.value['students.view'] || can.value['attendance.record'] },
     { href: '/students', label: t('Students'), show: can.value['students.view'] },
     { href: '/attendance', label: t('Attendance'), show: can.value['attendance.record'] || can.value['attendance.view'] || can.value['attendance.manage'] },
+    { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
     { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
 ].filter((item) => item.show));
 

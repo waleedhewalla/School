@@ -26,4 +26,10 @@ class SchoolDateTest extends TestCase
         $this->assertSame('1 Ramadan 1445 AH — 11 March 2024', SchoolDate::display($date, DateDisplay::Both, 'en'));
         $this->assertSame('11 مارس 2024', SchoolDate::display($date, DateDisplay::Gregorian, 'ar'));
     }
+
+    public function test_converts_hijri_to_gregorian(): void
+    {
+        $this->assertSame('2024-03-11', SchoolDate::fromHijri(1445, 9, 1)->toDateString());
+        $this->assertSame('2019-05-14', SchoolDate::fromHijri(1440, 9, 9)->toDateString());
+    }
 }

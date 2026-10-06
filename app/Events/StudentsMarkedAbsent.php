@@ -2,19 +2,17 @@
 
 namespace App\Events;
 
-use App\Models\AttendanceRecord;
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Support\Collection;
 
 /**
  * Fired after attendance is saved, with the records whose code asks for
- * guardians to be told (absent, late). Notification channels (SMS,
- * WhatsApp, push) subscribe to this.
+ * guardians to be told (absent, late). Carries ids, not models: queued
+ * listeners reload them inside the school's context.
  */
 class StudentsMarkedAbsent
 {
     use Dispatchable;
 
-    /** @param  Collection<int, AttendanceRecord>  $records */
-    public function __construct(public int $schoolId, public Collection $records) {}
+    /** @param  list<int>  $recordIds */
+    public function __construct(public int $schoolId, public array $recordIds) {}
 }

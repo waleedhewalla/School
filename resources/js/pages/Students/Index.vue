@@ -29,6 +29,10 @@ const classLabel = (student) => {
 <template>
     <AppLayout :title="t('Students')">
         <div class="mb-4 flex flex-wrap gap-3">
+            <template v-if="$page.props.can['students.manage']">
+                <Link href="/students/create" class="btn-primary">{{ t('Admit a student') }}</Link>
+                <Link href="/students/import" class="btn-ghost">{{ t('Import from Noor') }}</Link>
+            </template>
             <input v-model="filters.search" type="search" class="input max-w-xs" :placeholder="t('Search by name, number or ID')">
             <select v-model="filters.section_id" class="input max-w-xs">
                 <option value="">{{ t('All sections') }}</option>

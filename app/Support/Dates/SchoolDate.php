@@ -3,7 +3,9 @@
 namespace App\Support\Dates;
 
 use App\Enums\DateDisplay;
+use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use IntlCalendar;
 use IntlDateFormatter;
 
 /**
@@ -46,6 +48,16 @@ class SchoolDate
         [$year, $month, $day] = array_map('intval', explode('-', self::format($date, 'islamic-umalqura', 'en', 'y-M-d')));
 
         return ['year' => $year, 'month' => $month, 'day' => $day];
+    }
+
+    /** Converts an Umm al-Qura Hijri date to a Gregorian date (Asia/Riyadh). */
+    public static function fromHijri(int $year, int $month, int $day): CarbonImmutable
+    {
+        $calendar = IntlCalendar::createInstance('Asia/Riyadh', 'en@calendar=islamic-umalqura');
+        $calendar->clear();
+        $calendar->set($year, $month - 1, $day, 12, 0, 0);
+
+        return CarbonImmutable::createFromTimestamp(intdiv((int) $calendar->getTime(), 1000), 'Asia/Riyadh')->startOfDay();
     }
 
     private static function format(DateTimeInterface $date, string $calendar, ?string $locale, string $pattern): string

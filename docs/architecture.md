@@ -75,3 +75,30 @@ Inertia v3 + Vue 3, built by Vite; Tailwind 4. Pages live in
   third-party font servers.
 - Web controllers (`app/Http/Controllers/Web`) reuse the same actions,
   policies and tenancy as the API.
+
+## Notifications
+
+`RecordAttendance` fires `StudentsMarkedAbsent` (school id + record ids) only
+for records whose code changed to one with `notify_guardian`. The queued
+listener `NotifyGuardiansOfAbsence` reloads the records inside
+`CurrentSchool::run()`, texts the primary guardians (or all guardians with a
+mobile if none is primary) and writes a `message_logs` row per attempt.
+
+SMS goes through the `SmsGateway` interface (`app/Support/Messaging`), chosen
+by `SMS_DRIVER`: `log` (default, development), `unifonic` or `taqnyat`.
+Provider failures are logged as `failed`, never thrown. Check both providers'
+request fields against their current API docs before going live.
+
+Phones are stored normalized (`9665XXXXXXXX`, see `App\Support\PhoneNumber`)
+so sibling matching and SMS work however a number was typed.
+
+## Noor import
+
+`NoorStudentSheet` finds columns by header text (aliases in
+`NoorStudentSheet::COLUMNS`, compared after Arabic normalization), so column
+order and extra columns don't matter. `ImportStudents` validates every row
+(preview) and then admits the valid ones (commit), using `ArabicName::split`
+for the four-part name and `SchoolDate::fromHijri` for Hijri birth dates.
+The uploaded file sits in private storage between preview and confirm and is
+deleted afterwards. The aliases are based on common Noor export headers and
+must be checked against real exports from pilot schools.

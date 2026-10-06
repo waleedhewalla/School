@@ -35,4 +35,21 @@ return [
         ],
     ],
 
+    /*
+    | SMS to guardians. Driver: "log" (development), "unifonic" or "taqnyat".
+    */
+    'sms' => [
+        'driver' => env('SMS_DRIVER', 'log'),
+        'unifonic' => [
+            'app_sid' => env('UNIFONIC_APP_SID'),
+            'sender_id' => env('UNIFONIC_SENDER_ID'),
+            'url' => env('UNIFONIC_URL', 'https://el.cloud.unifonic.com/rest/SMS/messages'),
+        ],
+        'taqnyat' => [
+            'token' => env('TAQNYAT_TOKEN'),
+            'sender' => env('TAQNYAT_SENDER'),
+            'url' => env('TAQNYAT_URL', 'https://api.taqnyat.sa/v1/messages'),
+        ],
+    ],
+
 ];

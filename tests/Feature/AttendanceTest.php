@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\SchoolRole;
 use App\Events\StudentsMarkedAbsent;
+use App\Models\AttendanceRecord;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Laravel\Sanctum\Sanctum;
@@ -33,7 +34,7 @@ class AttendanceTest extends TestCase
             ['student_id' => $sara->id, 'code' => 'A', 'note' => 'مريضة'],
         ]], $headers)->assertOk()->assertJsonCount(2, 'data');
 
-        Event::assertDispatched(StudentsMarkedAbsent::class, fn ($event) => $event->records->pluck('student_id')->all() === [$sara->id]);
+        Event::assertDispatched(StudentsMarkedAbsent::class, fn ($event) => $this->inSchool($school, fn () => AttendanceRecord::query()->whereKey($event->recordIds)->pluck('student_id')->all()) === [$sara->id]);
 
         $this->getJson($url, $headers)->assertJsonPath('data.taken', true)
             ->assertJsonFragment(['student_id' => $sara->id, 'code' => 'A', 'note' => 'مريضة']);

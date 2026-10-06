@@ -18,5 +18,9 @@
     "enrollment.repeated": "Repeating",
     "enrollment.graduated": "Graduated",
     "enrollment.transferred": "Transferred out",
-    "enrollment.withdrawn": "Withdrawn"
+    "enrollment.withdrawn": "Withdrawn",
+    "import.ready": "Ready",
+    "import.error": "Error",
+    "import.skipped": "Already registered",
+    "import.imported": "Imported"
 }

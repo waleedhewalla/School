@@ -9,6 +9,7 @@ use App\Actions\Students\AdmitStudent;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
 use App\Models\GradeLevel;
+use App\Models\MessageLog;
 use App\Models\School;
 use App\Models\Section;
 use App\Models\StaffMember;
@@ -89,6 +90,11 @@ trait CreatesSchools
             app(RecordAttendance::class)->handle($sectionA, Carbon::parse('2026-09-01'), 0, [
                 ['student_id' => $students[0]->id, 'code' => 'P'],
             ], $teacher);
+
+            MessageLog::query()->create([
+                'student_id' => $students[0]->id, 'channel' => 'sms', 'purpose' => 'attendance',
+                'to' => '966500000000', 'body' => 'test', 'status' => 'sent',
+            ]);
 
             return compact('year', 'grade', 'sectionA', 'sectionB', 'subject', 'teacher', 'staff', 'students');
         });

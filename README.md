@@ -15,7 +15,8 @@ Phase 0 done, Phase 1 in progress — see [docs/roadmap.md](docs/roadmap.md).
 - Academic structure: years, terms, Saudi stages and grade levels, sections, subjects
 - Arabic / English with RTL, Umm al-Qura Hijri dates
 - Students, guardians, families, enrollment and promotion, staff and teaching assignments
-- Daily and per-period attendance; guardian portal
+- Admission forms, Excel import in Noor's layout, year-end promotion
+- Daily and per-period attendance; SMS to guardians (Unifonic / Taqnyat); guardian portal
 - Web app (Inertia + Vue) and REST API v1 ([docs/api.md](docs/api.md))
 
 ## Run locally

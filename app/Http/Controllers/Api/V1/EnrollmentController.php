@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Students\ChangeEnrollment;
 use App\Actions\Students\EnrollStudent;
 use App\Actions\Students\PromoteStudents;
 use App\Enums\EnrollmentStatus;
@@ -16,7 +17,6 @@ use App\Rules\ExistsInCurrentSchool;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class EnrollmentController extends Controller
 {
@@ -40,33 +40,9 @@ class EnrollmentController extends Controller
     }
 
     /** Move to another section of the same grade and year, or end the enrollment. */
-    public function update(Request $request, Enrollment $enrollment, EnrollStudent $enroll): EnrollmentResource
+    public function update(Request $request, Enrollment $enrollment, ChangeEnrollment $change): EnrollmentResource
     {
-        $data = $request->validate([
-            'section_id' => ['sometimes', 'nullable', 'integer', ExistsInCurrentSchool::in('sections')],
-            'status' => ['sometimes', Rule::in([EnrollmentStatus::Transferred->value, EnrollmentStatus::Withdrawn->value])],
-            'left_on' => ['required_with:status', 'date'],
-        ]);
-
-        if ($enrollment->status !== EnrollmentStatus::Active) {
-            throw ValidationException::withMessages(['status' => __('students.enrollment_closed')]);
-        }
-
-        if (array_key_exists('section_id', $data) && $data['section_id'] !== null) {
-            $section = Section::query()->findOrFail($data['section_id']);
-            if ((int) $section->academic_year_id !== (int) $enrollment->academic_year_id || (int) $section->grade_level_id !== (int) $enrollment->grade_level_id) {
-                throw ValidationException::withMessages(['section_id' => __('students.section_mismatch')]);
-            }
-            if ((int) $section->id !== (int) $enrollment->section_id) {
-                $enroll->ensureCapacity($section);
-            }
-        }
-
-        $enrollment->update($data);
-
-        if (isset($data['status'])) {
-            $enrollment->student->update(['status' => $data['status']]);
-        }
+        $change->handle($enrollment, $request->validate(ChangeEnrollment::rules()));
 
         return new EnrollmentResource($enrollment->load('section', 'gradeLevel'));
     }

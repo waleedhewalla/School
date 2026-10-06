@@ -70,7 +70,7 @@ class RecordAttendance
         });
 
         if ($toNotify->isNotEmpty()) {
-            StudentsMarkedAbsent::dispatch($section->school_id, $toNotify);
+            StudentsMarkedAbsent::dispatch($section->school_id, $toNotify->pluck('id')->all());
         }
 
         return $saved;
