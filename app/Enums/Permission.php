@@ -27,7 +27,11 @@ final class Permission
 
     public const AttendanceView = 'attendance.view';
 
+    /** Record attendance for sections the user teaches. */
     public const AttendanceRecord = 'attendance.record';
+
+    /** Record or correct attendance for any section. */
+    public const AttendanceManage = 'attendance.manage';
 
     public const GradesView = 'grades.view';
 

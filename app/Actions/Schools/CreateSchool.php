@@ -3,6 +3,7 @@
 namespace App\Actions\Schools;
 
 use App\Enums\SchoolRole;
+use App\Models\AttendanceCode;
 use App\Models\Campus;
 use App\Models\GradeLevel;
 use App\Models\School;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * Onboards a school: the school row, a default campus, the Saudi general
- * education stages and grade levels, default roles, and its first admin.
+ * education stages and grade levels, attendance codes, default roles, and
+ * its first admin.
  */
 class CreateSchool
 {
@@ -37,6 +39,7 @@ class CreateSchool
                 ]);
 
                 $this->seedStages();
+                $this->seedAttendanceCodes();
             });
 
             $this->provisionRoles->handle($school);
@@ -47,6 +50,26 @@ class CreateSchool
 
             return $school;
         });
+    }
+
+    private function seedAttendanceCodes(): void
+    {
+        foreach ([
+            ['P', 'حاضر', 'Present', 'present', false, true],
+            ['A', 'غائب', 'Absent', 'absent', true, false],
+            ['L', 'متأخر', 'Late', 'late', true, false],
+            ['E', 'غائب بعذر', 'Excused absence', 'excused', false, false],
+        ] as $sequence => [$code, $ar, $en, $kind, $notify, $default]) {
+            AttendanceCode::query()->create([
+                'code' => $code,
+                'name_ar' => $ar,
+                'name_en' => $en,
+                'kind' => $kind,
+                'notify_guardian' => $notify,
+                'is_default' => $default,
+                'sequence' => $sequence + 1,
+            ]);
+        }
     }
 
     private function seedStages(): void

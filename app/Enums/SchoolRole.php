@@ -24,11 +24,13 @@ enum SchoolRole: string
             self::Principal => [
                 Permission::AcademicStructureView, Permission::AcademicStructureManage,
                 Permission::StudentsView, Permission::StudentsManage, Permission::StaffView,
-                Permission::AttendanceView, Permission::GradesView, Permission::AuditView,
+                Permission::AttendanceView, Permission::AttendanceManage,
+                Permission::GradesView, Permission::AuditView,
             ],
             self::Registrar => [
                 Permission::AcademicStructureView, Permission::StudentsView,
                 Permission::StudentsManage, Permission::StaffView,
+                Permission::AttendanceView, Permission::AttendanceManage,
             ],
             self::Teacher => [
                 Permission::AcademicStructureView, Permission::StudentsView,

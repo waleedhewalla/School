@@ -5,11 +5,19 @@ namespace Tests\Feature;
 use App\Actions\Schools\AddSchoolMember;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AttendanceCode;
+use App\Models\AttendanceRecord;
 use App\Models\Campus;
+use App\Models\Enrollment;
+use App\Models\Family;
 use App\Models\GradeLevel;
+use App\Models\Guardian;
 use App\Models\Section;
+use App\Models\StaffMember;
 use App\Models\Stage;
+use App\Models\Student;
 use App\Models\Subject;
+use App\Models\TeachingAssignment;
 use App\Models\Term;
 use App\Support\Tenancy\CurrentSchool;
 use App\Support\Tenancy\SchoolContextMismatch;
@@ -29,6 +37,9 @@ class TenantIsolationTest extends TestCase
         return [
             [Campus::class], [Stage::class], [GradeLevel::class], [AcademicYear::class],
             [Term::class], [Section::class], [Subject::class],
+            [Family::class], [Student::class], [Guardian::class], [StaffMember::class],
+            [Enrollment::class], [TeachingAssignment::class],
+            [AttendanceCode::class], [AttendanceRecord::class],
         ];
     }
 
@@ -37,8 +48,8 @@ class TenantIsolationTest extends TestCase
     {
         $schoolA = $this->createSchool();
         $schoolB = $this->createSchool();
-        $this->seedStructure($schoolA);
-        $this->seedStructure($schoolB);
+        $this->seedSchoolData($schoolA);
+        $this->seedSchoolData($schoolB);
 
         $current = app(CurrentSchool::class);
 
