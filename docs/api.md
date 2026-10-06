@@ -45,4 +45,21 @@ language; `name_ar` / `name_en` are also returned where editable.
 | GET, POST | `/subjects` | view / manage |
 | GET, PATCH, DELETE | `/subjects/{id}` | view / manage |
 
-Academic years also return `starts_on_hijri` / `ends_on_hijri`.
+| GET | `/students` (`?search=`, `?section_id=`, `?status=`, paginated) | `students.view` |
+| POST | `/students` — admit: student fields + `guardians[]` (new or `guardian_id`) + `enrollment` | `students.manage` |
+| GET | `/students/{id}` | staff with `students.view`, the student's guardians, the student |
+| PATCH, DELETE | `/students/{id}` | `students.manage` |
+| POST, DELETE | `/students/{id}/guardians[/{guardian}]` — link / unlink a guardian | `students.manage` |
+| GET | `/guardians`, `/guardians/{id}` | `students.view` |
+| PATCH | `/guardians/{id}`; POST `/guardians/{id}/user` — give portal login | `students.manage` |
+| POST | `/enrollments`; PATCH `/enrollments/{id}` (move section, withdraw, transfer) | `students.manage` |
+| POST | `/promotions` — `from_academic_year_id`, `to_academic_year_id`, `decisions[]` (`promoted` / `repeated` / `graduated`) | `students.manage` |
+| GET, POST, PATCH, DELETE | `/staff-members` | `staff.view` / `staff.manage` |
+| GET | `/teaching-assignments`; POST, DELETE (reassigning replaces) | view / `staff.manage` |
+| GET | `/attendance-codes` | member |
+| GET, PUT | `/sections/{id}/attendance?date=&period=` — register (period 0 = daily) | `attendance.manage`, or `attendance.record` for sections you teach |
+| GET | `/my/children`, `/my/children/{id}/attendance` | guardian (own children only) |
+
+Academic years also return `starts_on_hijri` / `ends_on_hijri`. Saving a register
+again corrects it; guardian alerts fire only for records whose code changed to
+one marked `notify_guardian` (absent, late by default).

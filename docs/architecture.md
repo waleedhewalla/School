@@ -55,3 +55,23 @@ records will be decided by ownership in policies (Phase 1).
 REST under `/api/v1`, documented in [api.md](api.md). Bearer tokens from
 `POST /api/v1/auth/token`. Tenant endpoints need `X-School` unless the user
 belongs to exactly one school.
+
+## Web UI
+
+Inertia v3 + Vue 3, built by Vite; Tailwind 4. Pages live in
+`resources/js/pages`, the shell in `resources/js/layouts/AppLayout.vue`.
+
+- **Strings**: `useT()` from `resources/js/lib/i18n.js`. Keys are English text;
+  Arabic comes from `lang/ar.json`, shared to every page by
+  `HandleInertiaRequests`. Enum labels use keys like `status.active`
+  (both `lang/ar.json` and `lang/en.json`).
+- **Direction**: the root template sets `<html dir>`; components use logical
+  utilities only (`ms-*`, `pe-*`, `text-start`). Numbers, phone numbers and IDs
+  are wrapped in `dir="ltr"`.
+- **Shared props**: `auth.user`, `school`, `schools`, `can` (permission → bool
+  in the active school), `locale`, `dir`, `translations`, `flash`. They are
+  lazy closures because Inertia shares before the `school` middleware runs.
+- **Font**: IBM Plex Sans Arabic from npm (`@fontsource`), so pages never call
+  third-party font servers.
+- Web controllers (`app/Http/Controllers/Web`) reuse the same actions,
+  policies and tenancy as the API.

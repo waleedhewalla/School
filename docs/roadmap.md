@@ -16,22 +16,33 @@ See [repo-analysis.md](repo-analysis.md) for where each idea comes from.
 - [x] Hijri (Umm al-Qura) + Gregorian dates via PHP intl
 - [x] REST API v1 with Sanctum tokens
 - [x] Audit log (spatie/activitylog) on key models
-- [ ] Web UI framework decision (Livewire 4 vs Inertia + Vue) and sign-in screens with two-factor login
+- [x] Web UI: Inertia + Vue 3, Tailwind 4 with RTL-safe logical utilities, self-hosted Arabic font
+- [x] Sign-in / sign-out, school picker for multi-school users
+- [ ] Two-factor login, password reset, account invitations
 - [ ] Platform admin console; school setup wizard UI
 - [ ] OpenAPI docs generated in CI (Scribe)
 
-## Phase 1 — Core SIS MVP
+## Phase 1 — Core SIS MVP (in progress)
 
-- Students and guardians, **families** (siblings) — ICTSchool
-- Bulk import from Excel in Noor's column format
-- **Enrollments** per year (student × section) and promotion as history — Unifiedtransform
-- Staff records, teacher ↔ subject ↔ section assignments
-- Timetable: periods, builder, clash detection
-- Attendance: daily and per period, absence codes, bulk entry screen, guardian alerts — RosarioSIS, Frappe
-- Assessments: **grading scales** (validated intervals), **exam rules**, weighted **assessment components**, marks entry window, calculated vs final mark — Frappe, Unifiedtransform, ICTSchool
-- Arabic report cards (PDF)
-- Announcements; SMS (Unifonic/Taqnyat), WhatsApp, email behind one notification interface
-- Guardian / student portal; dashboards
+Slice 1 ✅
+- [x] Students (Arabic four-part name, Saudi ID/iqama check digit, auto numbers), guardians, **families** (siblings) — ICTSchool
+- [x] Admission in one step: student + guardians + first enrollment
+- [x] **Enrollments** per year, capacity, section transfer, withdrawal; promotion / repeat / graduation kept as history — Unifiedtransform
+- [x] Staff records, teacher ↔ subject ↔ section assignments
+- [x] Attendance: daily and per period, codes per school, bulk register, corrections; teachers limited to their sections; event for guardian alerts — RosarioSIS, Frappe
+- [x] Guardian portal (API + web): own children and their attendance only
+- [x] Web screens: dashboard, students list/profile, attendance register, guardian page
+
+Slice 2 — next
+- [ ] Web forms for admission, editing students/guardians, enrollment and promotion
+- [ ] Bulk import from Excel in Noor's column format
+- [ ] Notifications: SMS (Unifonic/Taqnyat), WhatsApp, email behind one interface, wired to the absence event
+- [ ] Timetable: periods, builder, clash detection
+
+Slice 3
+- [ ] Assessments: **grading scales** (validated intervals), **exam rules**, weighted **assessment components**, marks entry window, calculated vs final mark — Frappe, Unifiedtransform, ICTSchool
+- [ ] Arabic report cards (PDF)
+- [ ] Announcements; attendance and grade dashboards
 
 ## Phase 2 — Finance and admissions
 

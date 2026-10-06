@@ -1,0 +1,22 @@
+{
+    "status.active": "Active",
+    "status.graduated": "Graduated",
+    "status.withdrawn": "Withdrawn",
+    "status.transferred": "Transferred",
+    "gender.male": "Male",
+    "gender.female": "Female",
+    "relationship.father": "Father",
+    "relationship.mother": "Mother",
+    "relationship.brother": "Brother",
+    "relationship.sister": "Sister",
+    "relationship.grandparent": "Grandparent",
+    "relationship.uncle": "Uncle",
+    "relationship.aunt": "Aunt",
+    "relationship.other": "Other",
+    "enrollment.active": "Enrolled",
+    "enrollment.promoted": "Promoted",
+    "enrollment.repeated": "Repeating",
+    "enrollment.graduated": "Graduated",
+    "enrollment.transferred": "Transferred out",
+    "enrollment.withdrawn": "Withdrawn"
+}

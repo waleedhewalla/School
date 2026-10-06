@@ -2,16 +2,22 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Attendance\RecordAttendance;
 use App\Actions\Schools\AddSchoolMember;
 use App\Actions\Schools\CreateSchool;
+use App\Actions\Students\AdmitStudent;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
 use App\Models\GradeLevel;
 use App\Models\Section;
+use App\Models\StaffMember;
+use App\Models\Student;
 use App\Models\Subject;
+use App\Models\TeachingAssignment;
 use App\Models\User;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 /**
  * A demo school for local development. Every account's password is
@@ -39,7 +45,10 @@ class DatabaseSeeder extends Seeder
 
         $addMember->handle($school, $teacher, SchoolRole::Teacher);
 
-        $currentSchool->run($school, function () {
+        $parent = User::factory()->create(['name' => 'ولي أمر تجريبي', 'email' => 'parent@example.com', 'locale' => 'ar']);
+        $addMember->handle($school, $parent, SchoolRole::Guardian);
+
+        $currentSchool->run($school, function () use ($teacher, $parent) {
             $year = AcademicYear::query()->create([
                 'name' => '1448',
                 'starts_on' => '2026-08-23',
@@ -77,6 +86,70 @@ class DatabaseSeeder extends Seeder
             ] as [$code, $ar, $en]) {
                 Subject::query()->create(['code' => $code, 'name_ar' => $ar, 'name_en' => $en]);
             }
+
+            $this->seedStudents($year, $teacher, $parent);
         });
+    }
+
+    /** Grade 1 section أ: 12 students, a math teacher, a parent with two children, and a register for yesterday. */
+    private function seedStudents(AcademicYear $year, User $teacher, User $parent): void
+    {
+        $section = Section::query()
+            ->where('academic_year_id', $year->id)
+            ->whereHas('gradeLevel', fn ($q) => $q->where('name_en', 'Grade 1'))
+            ->where('name', 'أ')
+            ->firstOrFail();
+
+        $staff = StaffMember::query()->create(['employee_number' => 'T-001', 'name_ar' => 'معلم تجريبي', 'name_en' => 'Demo Teacher', 'user_id' => $teacher->id]);
+        TeachingAssignment::query()->create([
+            'academic_year_id' => $year->id,
+            'section_id' => $section->id,
+            'subject_id' => Subject::query()->where('code', 'MATH')->value('id'),
+            'staff_member_id' => $staff->id,
+            'is_homeroom' => true,
+        ]);
+
+        $names = [
+            ['عبدالله', 'محمد', 'الشهري', 'male'], ['فيصل', 'سعد', 'القحطاني', 'male'], ['ريم', 'خالد', 'العتيبي', 'female'],
+            ['نورة', 'خالد', 'العتيبي', 'female'], ['سلمان', 'فهد', 'الدوسري', 'male'], ['لمى', 'ناصر', 'الحربي', 'female'],
+            ['تركي', 'عبدالعزيز', 'المطيري', 'male'], ['جود', 'إبراهيم', 'الزهراني', 'female'], ['يوسف', 'علي', 'الغامدي', 'male'],
+            ['هيا', 'سلطان', 'السبيعي', 'female'], ['راكان', 'ماجد', 'العنزي', 'male'], ['دانة', 'عمر', 'الشمري', 'female'],
+        ];
+
+        $admit = app(AdmitStudent::class);
+        $alOtaibiGuardian = null;
+        $students = [];
+
+        foreach ($names as [$first, $father, $family, $gender]) {
+            $guardian = $family === 'العتيبي' && $alOtaibiGuardian
+                ? ['guardian_id' => $alOtaibiGuardian, 'relationship' => 'father', 'is_primary' => true]
+                : ['name_ar' => $father.' '.$family, 'phone' => '+9665'.random_int(10000000, 99999999), 'relationship' => 'father', 'is_primary' => true];
+
+            $student = $admit->handle([
+                'first_name_ar' => $first,
+                'father_name_ar' => $father,
+                'family_name_ar' => $family,
+                'gender' => $gender,
+                'date_of_birth' => '2020-0'.random_int(1, 9).'-1'.random_int(0, 9),
+                'guardians' => [$guardian],
+                'enrollment' => ['academic_year_id' => $year->id, 'grade_level_id' => $section->grade_level_id, 'section_id' => $section->id],
+            ]);
+
+            if ($family === 'العتيبي' && $alOtaibiGuardian === null) {
+                $alOtaibiGuardian = $student->guardians()->first()->id;
+                $student->guardians()->first()->user()->associate($parent)->save();
+            }
+
+            $students[] = $student;
+        }
+
+        $codes = ['P', 'P', 'P', 'A', 'P', 'L', 'P', 'P', 'P', 'P', 'E', 'P'];
+        app(RecordAttendance::class)->handle(
+            $section,
+            Carbon::yesterday(),
+            0,
+            array_map(fn (Student $student, string $code) => ['student_id' => $student->id, 'code' => $code], $students, $codes),
+            $teacher,
+        );
     }
 }

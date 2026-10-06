@@ -2,8 +2,51 @@
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../js/**/*.vue';
 
+/*
+ * Design tokens. Use them as Tailwind colors (bg-surface, text-ink, ...).
+ * Always use logical utilities (ms-*, me-*, ps-*, pe-*, start-*, end-*,
+ * text-start) so layouts mirror correctly in Arabic (RTL).
+ */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'IBM Plex Sans Arabic', ui-sans-serif, system-ui, sans-serif;
+
+    --color-surface: #f6f7f5;
+    --color-card: #ffffff;
+    --color-ink: #1c2326;
+    --color-muted: #5d676b;
+    --color-line: #e2e5e1;
+    --color-accent: #0f6e56;
+    --color-accent-ink: #ffffff;
+    --color-accent-soft: #e3f2ec;
+    --color-danger: #b42318;
+    --color-danger-soft: #fdecea;
+    --color-warn: #a15c07;
+    --color-warn-soft: #fdf3e2;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --color-surface: #131719;
+        --color-card: #1b2124;
+        --color-ink: #edf1ef;
+        --color-muted: #a1abaf;
+        --color-line: #2b3337;
+        --color-accent: #4cc39f;
+        --color-accent-ink: #0b1f19;
+        --color-accent-soft: #173a30;
+        --color-danger: #f27a6e;
+        --color-danger-soft: #3a1d1a;
+        --color-warn: #f0b45a;
+        --color-warn-soft: #3a2b14;
+    }
+}
+
+@layer components {
+    .card { @apply rounded-xl border border-line bg-card p-5; }
+    .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 bg-accent text-accent-ink hover:opacity-90; }
+    .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition disabled:opacity-50 border border-line hover:bg-surface; }
+    .input { @apply w-full rounded-lg border border-line bg-card px-3 py-2 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20; }
+    .label { @apply mb-1 block text-sm font-medium; }
 }

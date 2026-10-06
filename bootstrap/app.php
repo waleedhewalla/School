@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveCurrentSchool;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -21,7 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'locale' => SetLocale::class,
         ]);
 
-        $middleware->web(append: [SetLocale::class]);
+        $middleware->web(append: [SetLocale::class, HandleInertiaRequests::class]);
 
         // Order: auth → locale → school → route model binding. The school must
         // be known before binding so bound models are filtered to it.

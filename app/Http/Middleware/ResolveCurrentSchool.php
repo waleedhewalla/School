@@ -29,7 +29,12 @@ class ResolveCurrentSchool
 
         $school = $this->requestedSchool($request) ?? $this->onlySchoolOf($request);
 
-        abort_if($school === null, 400, __('tenancy.school_required'));
+        if ($school === null) {
+            // Browsers are sent to pick a school; API clients get an error.
+            return $request->expectsJson()
+                ? abort(400, __('tenancy.school_required'))
+                : redirect()->route('schools.select');
+        }
         abort_unless($user->canEnterSchool($school), 403, __('tenancy.not_a_member'));
 
         $this->currentSchool->set($school);

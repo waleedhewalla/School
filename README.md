@@ -8,13 +8,15 @@ Arabic first (RTL), Hijri and Gregorian dates, built for Noor, ZATCA and PDPL.
 
 ## Status
 
-Phase 0 (foundation) — see [docs/roadmap.md](docs/roadmap.md).
+Phase 0 done, Phase 1 in progress — see [docs/roadmap.md](docs/roadmap.md).
 
 - Multi-school tenancy with isolation enforced in code and tests
 - Roles per school (admin, principal, registrar, teacher, accountant, guardian, student)
 - Academic structure: years, terms, Saudi stages and grade levels, sections, subjects
 - Arabic / English with RTL, Umm al-Qura Hijri dates
-- REST API v1 ([docs/api.md](docs/api.md))
+- Students, guardians, families, enrollment and promotion, staff and teaching assignments
+- Daily and per-period attendance; guardian portal
+- Web app (Inertia + Vue) and REST API v1 ([docs/api.md](docs/api.md))
 
 ## Run locally
 
@@ -22,6 +24,7 @@ Requires PHP 8.3 with `intl`, `pdo_sqlite` (or `pdo_pgsql`) and Composer.
 
 ```bash
 composer install
+npm install && npm run build
 cp .env.example .env
 php artisan key:generate
 touch database/database.sqlite
@@ -29,8 +32,9 @@ php artisan migrate --seed   # demo school "demo"; every password is "password"
 php artisan serve
 ```
 
-Demo accounts: `platform@example.com` (platform admin), `admin@example.com`
-(school admin), `teacher@example.com` (teacher).
+Open http://localhost:8000/login. Demo accounts: `admin@example.com` (school
+admin), `teacher@example.com` (teacher of grade 1 / أ), `parent@example.com`
+(guardian of two siblings), `platform@example.com` (platform admin).
 
 ```bash
 php artisan test        # test suite
