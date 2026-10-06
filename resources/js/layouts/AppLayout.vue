@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { useT } from '../lib/i18n';
 
@@ -9,62 +9,112 @@ const t = useT();
 const page = usePage();
 const can = computed(() => page.props.can ?? {});
 const otherLocale = computed(() => (page.props.locale === 'ar' ? 'en' : 'ar'));
+const menuOpen = ref(false);
+watch(() => page.url, () => { menuOpen.value = false; });
 
-const nav = computed(() => [
-    { href: '/dashboard', label: t('Dashboard'), show: can.value['students.view'] || can.value['attendance.record'] },
-    { href: '/students', label: t('Students'), show: can.value['students.view'] },
-    { href: '/attendance', label: t('Attendance'), show: can.value['attendance.record'] || can.value['attendance.view'] || can.value['attendance.manage'] },
-    // Teachers get their own week; managers and office staff see section timetables.
-    { href: '/timetable', label: t('Timetable'), show: can.value['timetable.manage'] || (can.value['academic-structure.view'] && !can.value['attendance.record']) },
-    { href: '/my/timetable', label: t('My timetable'), show: can.value['attendance.record'] && !can.value['timetable.manage'] },
-    { href: '/marks', label: t('Marks'), show: can.value['grades.record'] || can.value['grades.manage'] },
-    { href: '/results', label: t('Results'), show: can.value['grades.view'] },
-    { href: '/grading', label: t('Assessments'), show: can.value['grades.manage'] },
-    { href: '/announcements', label: t('Announcements'), show: can.value['academic-structure.view'] },
-    { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
-    { href: can.value['timetable.manage'] ? '/settings/periods' : '/settings/notifications', label: t('Settings'), show: can.value['timetable.manage'] || can.value['school.manage'] || can.value['grades.manage'] },
-    { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
-].filter((item) => item.show));
+// Grouped navigation; items and empty groups hidden by permission.
+const groups = computed(() => [
+    {
+        label: t('Home'),
+        items: [
+            { href: '/dashboard', label: t('Dashboard'), show: can.value['students.view'] || can.value['attendance.record'] },
+            { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
+            { href: '/announcements', label: t('Announcements'), show: can.value['academic-structure.view'] },
+        ],
+    },
+    {
+        label: t('Students'),
+        items: [
+            { href: '/students', label: t('Students'), show: can.value['students.view'] },
+            { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
+        ],
+    },
+    {
+        label: t('School day'),
+        items: [
+            { href: '/attendance', label: t('Attendance'), show: can.value['attendance.record'] || can.value['attendance.view'] || can.value['attendance.manage'] },
+            // Teachers get their own week; managers and office staff see section timetables.
+            { href: '/my/timetable', label: t('My timetable'), show: can.value['attendance.record'] && !can.value['timetable.manage'] },
+            { href: '/timetable', label: t('Timetable'), show: can.value['timetable.manage'] || (can.value['academic-structure.view'] && !can.value['attendance.record']) },
+        ],
+    },
+    {
+        label: t('Grades'),
+        items: [
+            { href: '/marks', label: t('Marks'), show: can.value['grades.record'] || can.value['grades.manage'] },
+            { href: '/results', label: t('Results'), show: can.value['grades.view'] },
+            { href: '/grading', label: t('Assessments'), show: can.value['grades.manage'] },
+        ],
+    },
+    {
+        label: t('Administration'),
+        items: [
+            { href: '/users', label: t('Users'), show: can.value['members.manage'] },
+            {
+                href: can.value['timetable.manage'] ? '/settings/periods' : (can.value['grades.manage'] ? '/settings/grading' : '/settings/notifications'),
+                match: '/settings',
+                label: t('Settings'),
+                show: can.value['timetable.manage'] || can.value['school.manage'] || can.value['grades.manage'],
+            },
+        ],
+    },
+].map((g) => ({ ...g, items: g.items.filter((i) => i.show) })).filter((g) => g.items.length));
 
-const isActive = (href) => page.url === href || page.url.startsWith(`${href}?`) || page.url.startsWith(`${href}/`)
-    || (href.startsWith('/settings') && page.url.startsWith('/settings'));
+const isActive = (item) => {
+    const href = item.match ?? item.href;
+    return page.url === href || page.url.startsWith(`${href}?`) || page.url.startsWith(`${href}/`);
+};
 </script>
 
 <template>
     <Head :title="title" />
-    <div class="min-h-screen">
-        <header class="border-b border-line bg-card">
-            <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-4 py-3">
-                <Link href="/dashboard" class="text-lg font-semibold text-accent">{{ t('Madrasa') }}</Link>
-                <span v-if="page.props.school" class="text-sm text-muted">{{ page.props.school.name }}</span>
+    <div class="min-h-screen lg:flex">
+        <!-- Sidebar: on the start side (right in Arabic). -->
+        <aside
+            class="fixed inset-y-0 start-0 z-30 w-64 overflow-y-auto border-e border-line bg-card px-3 py-4 transition-transform lg:static"
+            :class="menuOpen ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'"
+            :aria-label="t('Main menu')"
+        >
+            <Link href="/dashboard" class="mb-1 block px-3 text-lg font-semibold text-accent">{{ t('Madrasa') }}</Link>
+            <div v-if="page.props.school" class="mb-4 px-3 text-sm text-muted">{{ page.props.school.name }}</div>
 
-                <nav class="flex flex-wrap gap-1 text-sm">
+            <nav class="space-y-4 text-sm">
+                <div v-for="group in groups" :key="group.label">
+                    <div class="mb-1 px-3 text-xs font-semibold uppercase tracking-wide text-muted">{{ group.label }}</div>
                     <Link
-                        v-for="item in nav"
+                        v-for="item in group.items"
                         :key="item.href"
                         :href="item.href"
-                        class="rounded-lg px-3 py-1.5"
-                        :class="isActive(item.href) ? 'bg-accent-soft font-semibold text-accent' : 'text-muted hover:text-ink'"
-                    >
-                        {{ item.label }}
-                    </Link>
-                </nav>
-
-                <div class="ms-auto flex items-center gap-3 text-sm">
-                    <Link v-if="page.props.schools.length > 1" href="/schools" class="text-muted hover:text-ink">{{ t('Switch school') }}</Link>
-                    <a :href="`/locale/${otherLocale}`" class="text-muted hover:text-ink">{{ otherLocale === 'ar' ? 'العربية' : 'English' }}</a>
-                    <span class="hidden text-muted sm:inline">{{ page.props.auth.user?.name }}</span>
-                    <button type="button" class="text-muted hover:text-ink" @click="router.post('/logout')">{{ t('Sign out') }}</button>
+                        class="block rounded-lg px-3 py-1.5"
+                        :class="isActive(item) ? 'bg-accent-soft font-semibold text-accent' : 'text-ink hover:bg-surface'"
+                        :aria-current="isActive(item) ? 'page' : undefined"
+                    >{{ item.label }}</Link>
                 </div>
-            </div>
-        </header>
+            </nav>
+        </aside>
+        <div v-if="menuOpen" class="fixed inset-0 z-20 bg-black/30 lg:hidden" @click="menuOpen = false" />
 
-        <main class="mx-auto max-w-6xl px-4 py-6">
-            <div v-if="page.props.flash?.success" class="mb-4 rounded-lg bg-accent-soft px-4 py-3 text-sm text-accent" role="status">
-                {{ page.props.flash.success }}
-            </div>
-            <h1 v-if="title" class="mb-5 text-2xl font-semibold">{{ title }}</h1>
-            <slot />
-        </main>
+        <div class="min-w-0 flex-1">
+            <header class="border-b border-line bg-card">
+                <div class="flex items-center gap-3 px-4 py-3">
+                    <button type="button" class="btn-ghost px-2 py-1 lg:hidden" :aria-expanded="menuOpen" :aria-label="t('Main menu')" @click="menuOpen = !menuOpen">☰</button>
+                    <span class="font-semibold lg:hidden">{{ page.props.school?.name ?? t('Madrasa') }}</span>
+                    <div class="ms-auto flex items-center gap-3 text-sm">
+                        <Link v-if="page.props.schools.length > 1" href="/schools" class="text-muted hover:text-ink">{{ t('Switch school') }}</Link>
+                        <a :href="`/locale/${otherLocale}`" class="text-muted hover:text-ink">{{ otherLocale === 'ar' ? 'العربية' : 'English' }}</a>
+                        <Link href="/account" class="hidden text-muted hover:text-ink sm:inline">{{ page.props.auth.user?.name }}</Link>
+                        <button type="button" class="text-muted hover:text-ink" @click="router.post('/logout')">{{ t('Sign out') }}</button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="mx-auto max-w-6xl px-4 py-6">
+                <div v-if="page.props.flash?.success" class="mb-4 rounded-lg bg-accent-soft px-4 py-3 text-sm text-accent" role="status">
+                    {{ page.props.flash.success }}
+                </div>
+                <h1 v-if="title" class="mb-5 text-2xl font-semibold">{{ title }}</h1>
+                <slot />
+            </main>
+        </div>
     </div>
 </template>

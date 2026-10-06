@@ -12,11 +12,15 @@ use App\Models\Term;
 use App\Support\AttendanceSummary;
 use App\Support\Dates\SchoolDate;
 use App\Support\Grades\TermResults;
+use App\Support\Pdf\InlineAssets;
+use App\Support\Pdf\PdfRenderer;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -40,6 +44,7 @@ class ResultsController extends Controller
             'comments' => $term && $section ? ReportCardComment::query()->where('term_id', $term->id)->pluck('comment', 'student_id') : [],
             'canManage' => $request->user()->can(Permission::GradesManage),
             'canComment' => $section ? self::canComment($request->user(), $section) : false,
+            'pdfEnabled' => config('services.pdf.driver') === 'gotenberg',
         ]);
     }
 
@@ -93,6 +98,21 @@ class ResultsController extends Controller
                 ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->id))->exists();
     }
 
+    /** Server-rendered PDF of the section's report cards (when a PDF service is configured). */
+    public function pdf(Request $request, Section $section, Term $term, CurrentSchool $currentSchool, PdfRenderer $pdf): HttpResponse
+    {
+        abort_unless(config('services.pdf.driver') === 'gotenberg', 404);
+        abort_unless($request->user()->can(Permission::GradesView), 403);
+
+        $html = $this->print($request, $section, $term, $currentSchool)->with('inlineCss', InlineAssets::css())->render();
+        $name = 'report-cards-'.Str::slug($section->gradeLevel->name_en ?: 'section').'-'.$section->id.'-term-'.$term->sequence.'.pdf';
+
+        return response($pdf->render($html), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="'.$name.'"',
+        ]);
+    }
+
     /** Printable report cards: a whole section, or one student (?student_id=). */
     public function print(Request $request, Section $section, Term $term, CurrentSchool $currentSchool): View
     {
@@ -119,6 +139,7 @@ class ResultsController extends Controller
             'attendance' => AttendanceSummary::forStudents($students->pluck('id'), $term->starts_on, $term->ends_on),
             'comments' => ReportCardComment::query()->where('term_id', $term->id)->whereIn('student_id', $students->pluck('id'))->pluck('comment', 'student_id'),
             'issued' => SchoolDate::display(now(), $currentSchool->get()->date_display),
+            'inlineCss' => null,
         ]);
     }
 }

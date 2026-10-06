@@ -3,7 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>{{ __('Report cards') }} — {{ $section->gradeLevel->name }} / {{ $section->name }}</title>
-    @vite(['resources/css/print.css'])
+    @if ($inlineCss !== null)
+        <style>{!! $inlineCss !!}</style>
+    @else
+        @vite(['resources/css/print.css'])
+    @endif
 </head>
 <body>
     <div class="toolbar no-print">

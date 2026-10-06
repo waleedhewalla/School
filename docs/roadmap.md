@@ -18,7 +18,7 @@ See [repo-analysis.md](repo-analysis.md) for where each idea comes from.
 - [x] Audit log (spatie/activitylog) on key models
 - [x] Web UI: Inertia + Vue 3, Tailwind 4 with RTL-safe logical utilities, self-hosted Arabic font
 - [x] Sign-in / sign-out, school picker for multi-school users
-- [ ] Two-factor login, password reset, account invitations
+- [x] Two-factor login, password reset, account invitations (slice 6)
 - [ ] Platform admin console; school setup wizard UI
 - [ ] OpenAPI docs generated in CI (Scribe)
 
@@ -59,11 +59,18 @@ Slice 5 ✅
 - [x] Report cards: term attendance summary and class teacher's remarks (homeroom teacher or grade managers)
 - [x] Subject display order used on results, report cards, setup and marks
 
-Slice 6 — next
-- [ ] Navigation: grouped sidebar (the top bar now wraps for admins)
-- [ ] Server-side PDF for bulk report-card download (Gotenberg or headless Chrome)
-- [ ] Per-stage grading scales; two-factor login, password reset and invitations
+Slice 6 ✅
+- [x] Grouped side menu (start side: right in Arabic), collapsible on phones
+- [x] Password reset by email; account page (name, language, password)
+- [x] Two-factor sign-in with an authenticator app and single-use recovery codes, on web and API tokens
+- [x] Users page: invite by email with roles, change roles, deactivate (can't lock yourself out); accepting creates the account or links an existing one
+- [x] Grading scale per stage, falling back to the school default
+- [x] Bulk report-card PDF through Gotenberg (`PDF_DRIVER=gotenberg`), fonts embedded
+
+Next (Phase 1 wrap-up)
 - [ ] Verify Noor column aliases against a real export
+- [ ] Confirm the default grading bands and pass marks per stage with the Ministry rules
+- [ ] Security review and load test with a 600-student demo school before the first pilot
 
 ## Phase 2 — Finance and admissions
 

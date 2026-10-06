@@ -32,5 +32,14 @@
     "day.6": "Saturday",
     "audience.guardians": "Guardians",
     "audience.staff": "Staff",
-    "audience.everyone": "Everyone"
+    "audience.everyone": "Everyone",
+    "member.active": "Active",
+    "member.inactive": "Inactive",
+    "role.school_admin": "School admin",
+    "role.principal": "Principal",
+    "role.registrar": "Registrar",
+    "role.teacher": "Teacher",
+    "role.accountant": "Accountant",
+    "role.guardian": "Guardian",
+    "role.student": "Student"
 }

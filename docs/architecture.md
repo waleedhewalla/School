@@ -140,3 +140,24 @@ and only while `terms.marks_open`. Report cards are a print-styled Blade
 page (`resources/views/report-cards/print.blade.php`, `resources/css/print.css`);
 guardians may open their own child's card only after
 `terms.results_published_at` is set.
+
+## Accounts and sign-in
+
+- Password reset uses Laravel's password broker; the request form answers the
+  same way whether or not the email exists.
+- Two-factor sign-in (`App\Support\Auth\TwoFactor`, TOTP via
+  pragmarx/google2fa): the secret and recovery codes are stored encrypted.
+  With it on, the password step only stores `login.id` in the session and the
+  user is signed in after `/two-factor-challenge`; API tokens need `code`.
+- Invitations store only a SHA-256 hash of the emailed token and expire after
+  7 days. `Invitation::findPending()` deliberately bypasses the school scope:
+  the guest accepting has no school context yet, and the token is the
+  credential. This is the only such exception besides `memberships`.
+
+## PDFs
+
+Report cards print from the browser everywhere. With `PDF_DRIVER=gotenberg`
+the results page also offers a server-rendered PDF: the same Blade view with
+the print CSS and woff2 fonts inlined (`App\Support\Pdf\InlineAssets`) is
+sent to a Gotenberg container (headless Chromium), so Arabic shaping matches
+the browser.

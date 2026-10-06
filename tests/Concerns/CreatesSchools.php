@@ -12,6 +12,7 @@ use App\Models\Announcement;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\GradeLevel;
+use App\Models\Invitation;
 use App\Models\MessageLog;
 use App\Models\Period;
 use App\Models\ReportCardComment;
@@ -113,6 +114,8 @@ trait CreatesSchools
 
             ReportCardComment::query()->create(['term_id' => $term->id, 'student_id' => $students[0]->id, 'comment' => 'طالب متميز']);
             Announcement::query()->create(['audience' => 'everyone', 'title' => 'ترحيب', 'body' => 'أهلًا بكم', 'published_at' => now()->subDay()]);
+
+            Invitation::issue(['email' => 'invited@example.com', 'name' => 'مدعو', 'roles' => ['teacher']]);
 
             MessageLog::query()->create([
                 'student_id' => $students[0]->id, 'channel' => 'sms', 'purpose' => 'attendance',

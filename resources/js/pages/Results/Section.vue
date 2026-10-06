@@ -4,7 +4,7 @@ import { router } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import { useT } from '../../lib/i18n';
 
-const props = defineProps({ terms: Array, sections: Array, filters: Object, results: Object, comments: [Object, Array], canManage: Boolean, canComment: Boolean });
+const props = defineProps({ terms: Array, sections: Array, filters: Object, results: Object, comments: [Object, Array], canManage: Boolean, canComment: Boolean, pdfEnabled: Boolean });
 const t = useT();
 
 const filters = reactive({ term_id: props.filters.term_id, section_id: props.filters.section_id ?? '' });
@@ -53,7 +53,10 @@ const fmt = (n) => (n === null || n === undefined ? '—' : `${Number(n).toFixed
 
         <p v-if="!results" class="card text-muted">{{ t('Choose a section to see its results.') }}</p>
         <template v-else>
-            <a :href="`/report-cards/${filters.section_id}/${filters.term_id}`" target="_blank" class="btn-ghost mb-3">{{ t('Print report cards for the section') }}</a>
+            <div class="mb-3 flex flex-wrap gap-2">
+                <a :href="`/report-cards/${filters.section_id}/${filters.term_id}`" target="_blank" class="btn-ghost">{{ t('Print report cards for the section') }}</a>
+                <a v-if="pdfEnabled" :href="`/report-cards/${filters.section_id}/${filters.term_id}/pdf`" class="btn-ghost">{{ t('Download PDF') }}</a>
+            </div>
 
             <div class="card overflow-x-auto p-0">
                 <table class="w-full text-sm">

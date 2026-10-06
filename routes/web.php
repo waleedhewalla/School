@@ -1,14 +1,17 @@
 <?php
 
 use App\Enums\Permission;
+use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AnnouncementController;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
 use App\Http\Controllers\Web\GradingSetupController;
 use App\Http\Controllers\Web\GuardianLookupController;
+use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\MarksController;
+use App\Http\Controllers\Web\PasswordResetController;
 use App\Http\Controllers\Web\PortalController;
 use App\Http\Controllers\Web\PromotionController;
 use App\Http\Controllers\Web\ResultsController;
@@ -17,6 +20,7 @@ use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\StudentController;
 use App\Http\Controllers\Web\StudentImportController;
 use App\Http\Controllers\Web\TimetableController;
+use App\Http\Controllers\Web\UserController;
 use App\Support\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -37,15 +41,34 @@ Route::get('/locale/{locale}', function (Request $request, string $locale) {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'create'])->name('login');
     Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:20,1');
+    Route::get('/two-factor-challenge', [LoginController::class, 'challenge'])->name('two-factor.challenge');
+    Route::post('/two-factor-challenge', [LoginController::class, 'verifyChallenge'])->middleware('throttle:20,1');
+    Route::get('/forgot-password', [PasswordResetController::class, 'request'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'email'])->middleware('throttle:6,1')->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'update'])->name('password.update');
 });
+
+// Open to guests and signed-in users alike; the token is the credential.
+Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
+Route::post('/invitations/{token}', [InvitationController::class, 'accept'])->middleware('throttle:10,1')->name('invitations.accept');
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::get('/schools', [SchoolSwitchController::class, 'index'])->name('schools.select');
+
     Route::post('/schools', [SchoolSwitchController::class, 'store'])->name('schools.switch');
 
     Route::middleware('school')->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
+
+        // Inside the school context so the menu and permissions render normally.
+        Route::get('/account', [AccountController::class, 'show'])->name('account');
+        Route::put('/account', [AccountController::class, 'updateProfile'])->name('account.update');
+        Route::put('/account/password', [AccountController::class, 'updatePassword'])->name('account.password');
+        Route::post('/account/two-factor', [AccountController::class, 'enableTwoFactor'])->name('account.two-factor.enable');
+        Route::post('/account/two-factor/confirm', [AccountController::class, 'confirmTwoFactor'])->name('account.two-factor.confirm');
+        Route::delete('/account/two-factor', [AccountController::class, 'disableTwoFactor'])->name('account.two-factor.disable');
 
         Route::get('/students', [StudentController::class, 'index'])
             ->middleware('can:'.Permission::StudentsView)->name('students.index');
@@ -89,6 +112,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/results', [ResultsController::class, 'index'])->middleware('can:'.Permission::GradesView)->name('results.index');
         // Staff with grades.view, or a guardian for their own child once results are published.
         Route::get('/report-cards/{section}/{term}', [ResultsController::class, 'print'])->name('report-cards.print');
+        Route::get('/report-cards/{section}/{term}/pdf', [ResultsController::class, 'pdf'])->name('report-cards.pdf');
         Route::post('/report-cards/{section}/{term}/comments', [ResultsController::class, 'comment'])->name('report-cards.comment');
 
         Route::get('/announcements', [AnnouncementController::class, 'index'])
@@ -105,6 +129,13 @@ Route::middleware('auth')->group(function () {
             Route::patch('/terms/{term}', [ResultsController::class, 'updateTerm'])->name('terms.update');
             Route::get('/settings/grading', [GradingSetupController::class, 'scale'])->name('settings.grading');
             Route::put('/settings/grading', [GradingSetupController::class, 'saveScale'])->name('settings.grading.save');
+        });
+
+        Route::middleware('can:'.Permission::MembersManage)->group(function () {
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::post('/users/invitations', [UserController::class, 'invite'])->name('users.invite');
+            Route::delete('/users/invitations/{invitation}', [UserController::class, 'revoke'])->name('users.invitations.revoke');
+            Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
         });
 
         Route::middleware('can:'.Permission::SchoolManage)->group(function () {

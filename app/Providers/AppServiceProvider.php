@@ -10,6 +10,8 @@ use App\Support\Messaging\SmsGateway;
 use App\Support\Messaging\TaqnyatSmsGateway;
 use App\Support\Messaging\UnifonicSmsGateway;
 use App\Support\Messaging\WhatsAppGateway;
+use App\Support\Pdf\GotenbergPdfRenderer;
+use App\Support\Pdf\PdfRenderer;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -37,6 +39,8 @@ class AppServiceProvider extends ServiceProvider
             ),
             default => new LogSmsGateway,
         });
+
+        $this->app->bind(PdfRenderer::class, fn () => new GotenbergPdfRenderer((string) config('services.pdf.gotenberg_url')));
 
         $this->app->singleton(WhatsAppGateway::class, fn () => config('services.whatsapp.driver') === 'meta'
             ? new MetaWhatsAppGateway(

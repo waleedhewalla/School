@@ -17,6 +17,7 @@ use App\Models\GradeLevel;
 use App\Models\GradingBand;
 use App\Models\GradingScale;
 use App\Models\Guardian;
+use App\Models\Invitation;
 use App\Models\MessageLog;
 use App\Models\Period;
 use App\Models\ReportCardComment;
@@ -51,7 +52,7 @@ class TenantIsolationTest extends TestCase
             [AttendanceCode::class], [AttendanceRecord::class], [MessageLog::class],
             [Period::class], [TimetableEntry::class],
             [GradingScale::class], [GradingBand::class], [AssessmentComponent::class], [AssessmentScore::class],
-            [ReportCardComment::class], [Announcement::class],
+            [ReportCardComment::class], [Announcement::class], [Invitation::class],
         ];
     }
 

@@ -67,4 +67,13 @@ return [
         ],
     ],
 
+    /*
+    | Server-side PDF (bulk report cards). Driver: "none" (browser printing
+    | only) or "gotenberg".
+    */
+    'pdf' => [
+        'driver' => env('PDF_DRIVER', 'none'),
+        'gotenberg_url' => env('GOTENBERG_URL', 'http://127.0.0.1:3000'),
+    ],
+
 ];

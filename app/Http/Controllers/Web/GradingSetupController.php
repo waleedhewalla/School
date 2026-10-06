@@ -8,6 +8,7 @@ use App\Models\AcademicYear;
 use App\Models\AssessmentComponent;
 use App\Models\GradeLevel;
 use App\Models\GradingScale;
+use App\Models\Stage;
 use App\Models\Subject;
 use App\Models\Term;
 use App\Rules\ExistsInCurrentSchool;
@@ -93,11 +94,17 @@ class GradingSetupController extends Controller
         return back()->with('success', __('Copied to :count subjects.', ['count' => $count]));
     }
 
-    public function scale(): Response
+    /** The default scale, or one stage's own scale (?stage_id=). */
+    public function scale(Request $request): Response
     {
-        $scale = GradingScale::forSchool();
+        $stage = Stage::query()->find($request->integer('stage_id'));
+        $own = $stage ? GradingScale::query()->with('bands')->where('stage_id', $stage->id)->first() : null;
+        $scale = $stage ? ($own ?? GradingScale::forSchool()) : GradingScale::forSchool();
 
         return Inertia::render('Settings/Grading', [
+            'stages' => Stage::query()->orderBy('sequence')->get()->map(fn (Stage $s) => ['id' => $s->id, 'name' => $s->name]),
+            'stageId' => $stage?->id,
+            'usesDefault' => $stage !== null && $own === null,
             'scale' => $scale ? [
                 'pass_percent' => $scale->pass_percent,
                 'bands' => $scale->bands->map(fn ($b) => ['min_percent' => $b->min_percent, 'label_ar' => $b->label_ar, 'label_en' => $b->label_en])->values(),
@@ -108,19 +115,30 @@ class GradingSetupController extends Controller
     public function saveScale(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'pass_percent' => ['required', 'numeric', 'between:0,100'],
-            'bands' => ['required', 'array', 'min:2', 'max:12'],
+            'stage_id' => ['nullable', 'integer', ExistsInCurrentSchool::inTable('stages')],
+            'use_default' => ['sometimes', 'boolean'],
+            'pass_percent' => ['required_unless:use_default,true', 'numeric', 'between:0,100'],
+            'bands' => ['required_unless:use_default,true', 'array', 'min:2', 'max:12'],
             'bands.*.min_percent' => ['required', 'numeric', 'between:0,100', 'distinct'],
             'bands.*.label_ar' => ['required', 'string', 'max:30'],
             'bands.*.label_en' => ['nullable', 'string', 'max:30'],
         ]);
+        $stageId = $data['stage_id'] ?? null;
+
+        // A stage can go back to the school default by dropping its own scale.
+        if ($stageId !== null && $request->boolean('use_default')) {
+            GradingScale::query()->where('stage_id', $stageId)->delete();
+
+            return back()->with('success', __('Changes saved.'));
+        }
 
         if (! collect($data['bands'])->contains(fn ($b) => (float) $b['min_percent'] === 0.0)) {
             throw ValidationException::withMessages(['bands' => __('grades.bands_invalid')]);
         }
 
-        DB::transaction(function () use ($data) {
-            $scale = GradingScale::forSchool() ?? GradingScale::query()->create(['name' => 'السلم العام', 'is_default' => true]);
+        DB::transaction(function () use ($data, $stageId) {
+            $scale = GradingScale::query()->where('stage_id', $stageId)->first()
+                ?? GradingScale::query()->create(['stage_id' => $stageId, 'name' => 'السلم العام', 'is_default' => $stageId === null]);
             $scale->update(['pass_percent' => $data['pass_percent']]);
             $scale->bands()->delete();
             foreach ($data['bands'] as $band) {

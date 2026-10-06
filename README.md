@@ -19,6 +19,7 @@ Phase 0 done, Phase 1 in progress — see [docs/roadmap.md](docs/roadmap.md).
 - Bell schedule and timetables with clash checks; teacher's week and today's lessons
 - Assessments, marks entry, results and Arabic report cards (print / PDF) with attendance and remarks
 - Announcements to staff and guardians (optionally by SMS); attendance dashboard
+- Invitations by email, password reset, two-factor sign-in
 - Daily and per-period attendance; guardian alerts by SMS (Unifonic / Taqnyat), WhatsApp and email; guardian portal
 - Web app (Inertia + Vue) and REST API v1 ([docs/api.md](docs/api.md))
 

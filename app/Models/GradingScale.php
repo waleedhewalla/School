@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['name', 'is_default', 'pass_percent'])]
+#[Fillable(['stage_id', 'name', 'is_default', 'pass_percent'])]
 class GradingScale extends Model
 {
     use BelongsToSchool;
@@ -23,9 +23,17 @@ class GradingScale extends Model
         return $this->hasMany(GradingBand::class)->orderByDesc('min_percent');
     }
 
-    public static function forSchool(): ?self
+    /**
+     * The scale for a stage: its own scale if it has one, otherwise the
+     * school's default scale.
+     */
+    public static function forSchool(?int $stageId = null): ?self
     {
-        return static::query()->with('bands')->orderByDesc('is_default')->orderBy('id')->first();
+        if ($stageId !== null && ($own = static::query()->with('bands')->where('stage_id', $stageId)->first())) {
+            return $own;
+        }
+
+        return static::query()->with('bands')->whereNull('stage_id')->orderByDesc('is_default')->orderBy('id')->first();
     }
 
     /** The band a percentage falls in: the highest band whose minimum it reaches. */
