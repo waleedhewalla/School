@@ -4,7 +4,7 @@ import { router } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import { useT } from '../../lib/i18n';
 
-const props = defineProps({ terms: Array, sections: Array, filters: Object, results: Object, canManage: Boolean });
+const props = defineProps({ terms: Array, sections: Array, filters: Object, results: Object, comments: [Object, Array], canManage: Boolean, canComment: Boolean });
 const t = useT();
 
 const filters = reactive({ term_id: props.filters.term_id, section_id: props.filters.section_id ?? '' });
@@ -12,6 +12,11 @@ watch(filters, () => router.get('/results', filters, { replace: true }));
 
 const term = computed(() => props.terms.find((x) => x.id === filters.term_id));
 const update = (data) => router.patch(`/terms/${filters.term_id}`, data, { preserveScroll: true });
+const editing = reactive({});
+const startComment = (id) => { editing[id] = props.comments?.[id] ?? ''; };
+const saveComment = (id) => router.post(`/report-cards/${filters.section_id}/${filters.term_id}/comments`, { student_id: id, comment: editing[id] }, {
+    preserveScroll: true, onSuccess: () => { delete editing[id]; },
+});
 const fmt = (n) => (n === null || n === undefined ? '—' : `${Number(n).toFixed(2)}٪`);
 </script>
 
@@ -68,7 +73,18 @@ const fmt = (n) => (n === null || n === undefined ? '—' : `${Number(n).toFixed
                                 <span v-else class="text-muted">{{ t('Incomplete') }}</span>
                             </td>
                             <td class="px-3 py-2 font-semibold tabular-nums">{{ fmt(st.average) }} <span class="text-xs font-normal text-muted">{{ st.average_grade }}</span></td>
-                            <td class="px-3 py-2"><a :href="`/report-cards/${filters.section_id}/${filters.term_id}?student_id=${st.student_id}`" target="_blank" class="text-accent">{{ t('Report card') }}</a></td>
+                            <td class="px-3 py-2">
+                                <a :href="`/report-cards/${filters.section_id}/${filters.term_id}?student_id=${st.student_id}`" target="_blank" class="text-accent">{{ t('Report card') }}</a>
+                                <template v-if="canComment">
+                                    <div v-if="editing[st.student_id] !== undefined" class="mt-2 flex min-w-64 gap-2">
+                                        <input v-model="editing[st.student_id]" class="input py-1 text-xs" maxlength="500" :placeholder="t('Class teacher’s remarks')">
+                                        <button type="button" class="btn-ghost py-1 text-xs" @click="saveComment(st.student_id)">{{ t('Save') }}</button>
+                                    </div>
+                                    <button v-else type="button" class="block text-xs text-muted hover:text-ink" @click="startComment(st.student_id)">
+                                        {{ comments?.[st.student_id] ? t('Edit remark') : t('Add remark') }}
+                                    </button>
+                                </template>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

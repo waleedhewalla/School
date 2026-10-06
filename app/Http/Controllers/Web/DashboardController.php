@@ -7,9 +7,11 @@ use App\Enums\EnrollmentStatus;
 use App\Enums\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Models\Announcement;
 use App\Models\AttendanceRecord;
 use App\Models\Enrollment;
 use App\Models\Section;
+use App\Models\Student;
 use App\Models\TimetableEntry;
 use App\Support\Dates\SchoolDate;
 use App\Support\Tenancy\CurrentSchool;
@@ -59,7 +61,21 @@ class DashboardController extends Controller
                 'room' => $e->room,
             ]);
 
+        $since = now($school->timezone)->subDays(30);
+        $recent = AttendanceRecord::query()->with('code')
+            ->where('period', AttendanceRecord::DAILY)
+            ->where('date', '>=', $since->toDateString())
+            ->get();
+        $inSchool = $recent->filter(fn ($r) => in_array($r->code->kind, [AttendanceKind::Present, AttendanceKind::Late], true))->count();
+        $absences = $recent->filter(fn ($r) => $r->code->kind === AttendanceKind::Absent)->countBy('student_id')
+            ->filter(fn ($n) => $n >= 3)->sortDesc()->take(8);
+        $atRisk = Student::query()->whereKey($absences->keys())->get()->keyBy('id');
+
         return Inertia::render('Dashboard', [
+            'attendanceRate' => $recent->isEmpty() ? null : round($inSchool / $recent->count() * 100, 1),
+            'atRisk' => $absences->map(fn ($n, $id) => ['student_id' => $id, 'name' => $atRisk[$id]?->name, 'absences' => $n])->values(),
+            'announcements' => Announcement::query()->with('section.gradeLevel', 'author')->published()->forStaff()->limit(3)->get()
+                ->map(fn (Announcement $a) => AnnouncementController::present($a)),
             'lessonsToday' => $lessonsToday,
             'today' => SchoolDate::display(now(), $currentSchool->get()->date_display),
             'year' => $year?->only(['id', 'name']),

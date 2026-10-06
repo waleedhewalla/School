@@ -10,10 +10,12 @@ use App\Actions\Students\AdmitStudent;
 use App\Actions\Timetable\PlaceLesson;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\Announcement;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\GradeLevel;
 use App\Models\Period;
+use App\Models\ReportCardComment;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Student;
@@ -88,8 +90,8 @@ class DatabaseSeeder extends Seeder
                 ['DIGI', 'المهارات الرقمية', 'Digital Skills'],
                 ['ART', 'التربية الفنية', 'Art Education'],
                 ['PE', 'التربية البدنية والدفاع عن النفس', 'Physical Education'],
-            ] as [$code, $ar, $en]) {
-                Subject::query()->create(['code' => $code, 'name_ar' => $ar, 'name_en' => $en]);
+            ] as $sequence => [$code, $ar, $en]) {
+                Subject::query()->create(['code' => $code, 'sequence' => $sequence + 1, 'name_ar' => $ar, 'name_en' => $en]);
             }
 
             $this->seedStudents($year, $teacher, $parent);
@@ -191,6 +193,20 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+
+        Announcement::query()->create([
+            'audience' => 'everyone', 'title' => 'بداية الفصل الدراسي الأول',
+            'body' => "نرحب بأبنائنا الطلاب في العام الدراسي الجديد.\nالدوام يبدأ الساعة 6:45 صباحًا.", 'published_at' => now()->subDays(20),
+        ]);
+        Announcement::query()->create([
+            'audience' => 'guardians', 'section_id' => $section->id, 'title' => 'اجتماع أولياء أمور الصف الأول',
+            'body' => 'يسعدنا حضوركم يوم الأربعاء القادم بعد صلاة العصر.', 'published_at' => now()->subDays(2),
+        ]);
+        Announcement::query()->create([
+            'audience' => 'staff', 'title' => 'موعد رصد درجات الفصل الأول',
+            'body' => 'آخر موعد لرصد الدرجات نهاية الأسبوع القادم.', 'published_at' => now()->subDay(),
+        ]);
+        ReportCardComment::query()->create(['term_id' => $term->id, 'student_id' => $students[0]->id, 'comment' => 'طالب مجتهد ومنضبط، نتمنى له دوام التوفيق.']);
 
         $codes = ['P', 'P', 'P', 'A', 'P', 'L', 'P', 'P', 'P', 'P', 'E', 'P'];
         app(RecordAttendance::class)->handle(

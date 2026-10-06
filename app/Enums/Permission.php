@@ -47,6 +47,8 @@ final class Permission
 
     public const TimetableManage = 'timetable.manage';
 
+    public const AnnouncementsManage = 'announcements.manage';
+
     public const AuditView = 'audit.view';
 
     /** @return list<string> */

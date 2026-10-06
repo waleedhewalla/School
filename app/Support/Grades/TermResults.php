@@ -45,7 +45,7 @@ class TermResults
             ->map(fn (Collection $rows) => $rows->keyBy('assessment_component_id'));
 
         $subjects = $components->map(fn (Collection $list) => $list->first()->subject)
-            ->sortBy('code')->values();
+            ->sortBy([['sequence', 'asc'], ['code', 'asc']])->values();
 
         return [
             'subjects' => $subjects->map(fn (Subject $s) => ['id' => $s->id, 'name' => $s->name])->all(),

@@ -62,6 +62,22 @@
                 </tfoot>
             </table>
 
+            @php($a = $attendance[$student['student_id']])
+            <table class="info">
+                <tr>
+                    <th>{{ __('Days recorded') }}</th><td class="num">{{ $a['recorded'] }}</td>
+                    <th>{{ __('Absent') }}</th><td class="num">{{ $a['absent'] }}</td>
+                </tr>
+                <tr>
+                    <th>{{ __('Late') }}</th><td class="num">{{ $a['late'] }}</td>
+                    <th>{{ __('Excused absence') }}</th><td class="num">{{ $a['excused'] }}</td>
+                </tr>
+            </table>
+
+            @if (filled($comments[$student['student_id']] ?? null))
+                <div class="comment"><strong>{{ __('Class teacher’s remarks') }}:</strong> {{ $comments[$student['student_id']] }}</div>
+            @endif
+
             <footer>
                 <div>{{ __('Class teacher') }}: ....................</div>
                 <div>{{ __('Principal') }}: ....................</div>

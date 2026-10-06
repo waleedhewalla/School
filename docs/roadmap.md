@@ -53,10 +53,17 @@ Slice 4 ✅
 - [x] Results sheet per section; close/reopen mark entry; publish results to guardians
 - [x] Arabic report cards: print or save as PDF from the browser (one A4 page per student); guardians see their child's card once published
 
-Slice 5 — next
-- [ ] Announcements to guardians/staff; attendance and grade dashboards
-- [ ] Report card extras: attendance summary, teacher comments, behaviour; server-side PDF (Gotenberg or headless Chrome) for bulk download
-- [ ] Subject display order and per-stage grading scales
+Slice 5 ✅
+- [x] Announcements to staff, guardians or everyone, optionally one section only; optional SMS to primary guardians (one message per family phone)
+- [x] Dashboard: attendance rate over 30 days, students with 3+ absences, latest announcements; guardians see theirs on the portal
+- [x] Report cards: term attendance summary and class teacher's remarks (homeroom teacher or grade managers)
+- [x] Subject display order used on results, report cards, setup and marks
+
+Slice 6 — next
+- [ ] Navigation: grouped sidebar (the top bar now wraps for admins)
+- [ ] Server-side PDF for bulk report-card download (Gotenberg or headless Chrome)
+- [ ] Per-stage grading scales; two-factor login, password reset and invitations
+- [ ] Verify Noor column aliases against a real export
 
 ## Phase 2 — Finance and admissions
 

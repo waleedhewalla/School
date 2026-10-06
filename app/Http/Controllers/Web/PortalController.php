@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Announcement;
 use App\Models\Student;
 use App\Models\Term;
 use App\Support\Grades\TermResults;
@@ -26,7 +27,12 @@ class PortalController extends Controller
         $published = Term::query()->whereNotNull('results_published_at')
             ->whereHas('academicYear', fn ($q) => $q->where('is_current', true))->orderBy('sequence')->get();
 
+        $sectionIds = $children->map(fn (Student $c) => $c->currentEnrollment?->section_id)->filter()->unique()->values()->all();
+
         return Inertia::render('Portal/Children', [
+            'announcements' => Announcement::query()->with('section.gradeLevel', 'author')->published()
+                ->forGuardianOf($sectionIds)->limit(10)->get()
+                ->map(fn (Announcement $a) => AnnouncementController::present($a)),
             'children' => $children->map(fn (Student $child) => [
                 'results' => $child->currentEnrollment?->section_id ? $published->map(function (Term $term) use ($child) {
                     $section = $child->currentEnrollment->section;

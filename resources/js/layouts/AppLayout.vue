@@ -20,6 +20,7 @@ const nav = computed(() => [
     { href: '/marks', label: t('Marks'), show: can.value['grades.record'] || can.value['grades.manage'] },
     { href: '/results', label: t('Results'), show: can.value['grades.view'] },
     { href: '/grading', label: t('Assessments'), show: can.value['grades.manage'] },
+    { href: '/announcements', label: t('Announcements'), show: can.value['academic-structure.view'] },
     { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
     { href: can.value['timetable.manage'] ? '/settings/periods' : '/settings/notifications', label: t('Settings'), show: can.value['timetable.manage'] || can.value['school.manage'] || can.value['grades.manage'] },
     { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },

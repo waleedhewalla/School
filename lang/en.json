@@ -29,5 +29,8 @@
     "day.3": "Wednesday",
     "day.4": "Thursday",
     "day.5": "Friday",
-    "day.6": "Saturday"
+    "day.6": "Saturday",
+    "audience.guardians": "Guardians",
+    "audience.staff": "Staff",
+    "audience.everyone": "Everyone"
 }

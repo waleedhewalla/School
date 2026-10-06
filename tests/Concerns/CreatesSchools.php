@@ -8,11 +8,13 @@ use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\Announcement;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\GradeLevel;
 use App\Models\MessageLog;
 use App\Models\Period;
+use App\Models\ReportCardComment;
 use App\Models\School;
 use App\Models\Section;
 use App\Models\StaffMember;
@@ -108,6 +110,9 @@ trait CreatesSchools
             $classwork = AssessmentComponent::query()->create(['term_id' => $term->id, 'grade_level_id' => $grade->id, 'subject_id' => $subject->id, 'name_ar' => 'أعمال السنة', 'max_score' => 20, 'weight' => 40, 'sequence' => 1]);
             AssessmentComponent::query()->create(['term_id' => $term->id, 'grade_level_id' => $grade->id, 'subject_id' => $subject->id, 'name_ar' => 'الاختبار النهائي', 'max_score' => 40, 'weight' => 60, 'sequence' => 2]);
             AssessmentScore::query()->create(['assessment_component_id' => $classwork->id, 'student_id' => $students[0]->id, 'score' => 18]);
+
+            ReportCardComment::query()->create(['term_id' => $term->id, 'student_id' => $students[0]->id, 'comment' => 'طالب متميز']);
+            Announcement::query()->create(['audience' => 'everyone', 'title' => 'ترحيب', 'body' => 'أهلًا بكم', 'published_at' => now()->subDay()]);
 
             MessageLog::query()->create([
                 'student_id' => $students[0]->id, 'channel' => 'sms', 'purpose' => 'attendance',

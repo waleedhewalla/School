@@ -36,7 +36,7 @@ class GradingSetupController extends Controller
             'terms' => $terms->map(fn (Term $t) => ['id' => $t->id, 'name' => $t->name, 'marks_open' => $t->marks_open, 'published' => $t->resultsPublished()]),
             'grades' => $grades->map(fn (GradeLevel $g) => ['id' => $g->id, 'name' => $g->name]),
             'filters' => ['term_id' => $term?->id, 'grade_level_id' => $grade?->id],
-            'subjects' => $grade ? Subject::query()->orderBy('code')->get()->map(fn (Subject $s) => [
+            'subjects' => $grade ? Subject::query()->ordered()->get()->map(fn (Subject $s) => [
                 'id' => $s->id,
                 'name' => $s->name,
                 'components' => ($components[$s->id] ?? collect())->map(fn (AssessmentComponent $c) => [

@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Web;
 use App\Enums\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Models\ReportCardComment;
 use App\Models\Section;
 use App\Models\Student;
 use App\Models\Term;
+use App\Support\AttendanceSummary;
 use App\Support\Dates\SchoolDate;
 use App\Support\Grades\TermResults;
 use App\Support\Tenancy\CurrentSchool;
@@ -35,7 +37,9 @@ class ResultsController extends Controller
             'sections' => $sections->map(fn (Section $s) => ['id' => $s->id, 'label' => $s->gradeLevel->name.' / '.$s->name]),
             'filters' => ['term_id' => $term?->id, 'section_id' => $section?->id],
             'results' => $term && $section ? TermResults::forSection($section, $term) : null,
+            'comments' => $term && $section ? ReportCardComment::query()->where('term_id', $term->id)->pluck('comment', 'student_id') : [],
             'canManage' => $request->user()->can(Permission::GradesManage),
+            'canComment' => $section ? self::canComment($request->user(), $section) : false,
         ]);
     }
 
@@ -56,6 +60,37 @@ class ResultsController extends Controller
         $term->save();
 
         return back()->with('success', __('Changes saved.'));
+    }
+
+    /** The class teacher's remark for a student's report card (empty removes it). */
+    public function comment(Request $request, Section $section, Term $term): RedirectResponse
+    {
+        abort_unless(self::canComment($request->user(), $section), 403);
+
+        $data = $request->validate([
+            'student_id' => ['required', 'integer'],
+            'comment' => ['nullable', 'string', 'max:500'],
+        ]);
+        abort_unless(Student::query()->inSection($section->id)->whereKey($data['student_id'])->exists(), 404);
+
+        if (blank($data['comment'])) {
+            ReportCardComment::query()->where('term_id', $term->id)->where('student_id', $data['student_id'])->delete();
+        } else {
+            ReportCardComment::query()->updateOrCreate(
+                ['term_id' => $term->id, 'student_id' => $data['student_id']],
+                ['comment' => trim($data['comment']), 'author_id' => $request->user()->id],
+            );
+        }
+
+        return back()->with('success', __('Changes saved.'));
+    }
+
+    /** Grade managers, or the section's class (homeroom) teacher. */
+    public static function canComment($user, Section $section): bool
+    {
+        return $user->can(Permission::GradesManage)
+            || $section->teachingAssignments()->where('is_homeroom', true)
+                ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->id))->exists();
     }
 
     /** Printable report cards: a whole section, or one student (?student_id=). */
@@ -81,6 +116,8 @@ class ResultsController extends Controller
             'section' => $section,
             'term' => $term,
             'results' => TermResults::forSection($section, $term, $students),
+            'attendance' => AttendanceSummary::forStudents($students->pluck('id'), $term->starts_on, $term->ends_on),
+            'comments' => ReportCardComment::query()->where('term_id', $term->id)->whereIn('student_id', $students->pluck('id'))->pluck('comment', 'student_id'),
             'issued' => SchoolDate::display(now(), $currentSchool->get()->date_display),
         ]);
     }

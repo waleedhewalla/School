@@ -23,6 +23,7 @@ class SubjectRequest extends FormRequest
                     ->where('school_id', app(CurrentSchool::class)->id())
                     ->ignore($subject?->getKey()),
             ],
+            'sequence' => ['sometimes', 'integer', 'min:0', 'max:999'],
             'name_ar' => [Rule::requiredIf($creating), 'string', 'max:100'],
             'name_en' => ['nullable', 'string', 'max:100'],
         ];

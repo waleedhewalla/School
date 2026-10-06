@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Permission;
+use App\Http\Controllers\Web\AnnouncementController;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
@@ -88,6 +89,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/results', [ResultsController::class, 'index'])->middleware('can:'.Permission::GradesView)->name('results.index');
         // Staff with grades.view, or a guardian for their own child once results are published.
         Route::get('/report-cards/{section}/{term}', [ResultsController::class, 'print'])->name('report-cards.print');
+        Route::post('/report-cards/{section}/{term}/comments', [ResultsController::class, 'comment'])->name('report-cards.comment');
+
+        Route::get('/announcements', [AnnouncementController::class, 'index'])
+            ->middleware('can:'.Permission::AcademicStructureView)->name('announcements.index');
+        Route::middleware('can:'.Permission::AnnouncementsManage)->group(function () {
+            Route::post('/announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+            Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy'])->name('announcements.destroy');
+        });
 
         Route::middleware('can:'.Permission::GradesManage)->group(function () {
             Route::get('/grading', [GradingSetupController::class, 'index'])->name('grading.setup');

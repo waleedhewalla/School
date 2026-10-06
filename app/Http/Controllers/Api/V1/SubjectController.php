@@ -13,7 +13,7 @@ class SubjectController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        return SubjectResource::collection(Subject::query()->orderBy('code')->get());
+        return SubjectResource::collection(Subject::query()->ordered()->get());
     }
 
     public function store(SubjectRequest $request): SubjectResource

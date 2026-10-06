@@ -2,15 +2,21 @@
 import { usePage } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
+import AnnouncementList from '../../components/AnnouncementList.vue';
 import { formatDate, useT } from '../../lib/i18n';
 
-defineProps({ children: Array });
+defineProps({ children: Array, announcements: Array });
 const t = useT();
 const page = usePage();
 </script>
 
 <template>
     <AppLayout :title="t('My children')">
+        <section v-if="announcements.length" class="card mb-4">
+            <h2 class="font-semibold">{{ t('School announcements') }}</h2>
+            <AnnouncementList :items="announcements" />
+        </section>
+
         <p v-if="!children.length" class="card text-muted">{{ t('No children are linked to your account yet. Please contact the school.') }}</p>
 
         <div class="grid gap-4 md:grid-cols-2">

@@ -36,7 +36,7 @@ class MarksController extends Controller
             ->when($year, fn ($q) => $q->where('academic_year_id', $year->id))
             ->unless($user->can(Permission::GradesManage), fn ($q) => $q->whereHas('staffMember', fn ($s) => $s->where('user_id', $user->id)))
             ->get()
-            ->sortBy(fn ($a) => [$a->section->grade_level_id, $a->section->name, $a->subject->code])
+            ->sortBy(fn ($a) => [$a->section->grade_level_id, $a->section->name, $a->subject->sequence, $a->subject->code])
             ->values();
 
         $chosen = $assignments->first(fn ($a) => (int) $a->section_id === $request->integer('section_id') && (int) $a->subject_id === $request->integer('subject_id'));
