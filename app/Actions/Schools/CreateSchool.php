@@ -43,7 +43,7 @@ class CreateSchool
                 $this->seedStages();
                 $this->seedAttendanceCodes();
                 $this->seedPeriods();
-                $this->seedGradingScale();
+                $this->seedGradingScales();
             });
 
             $this->provisionRoles->handle($school);
@@ -56,16 +56,37 @@ class CreateSchool
         });
     }
 
-    /**
-     * A starting grading scale. Bands and the pass mark differ by stage and
-     * change with Ministry regulations, so schools review it in settings.
-     */
-    private function seedGradingScale(): void
+    /** Starting scales per stage / grade from config/madrasa_grading.php (Ministry-based, editable). */
+    private function seedGradingScales(): void
     {
-        $scale = GradingScale::query()->create(['name' => 'السلم العام', 'is_default' => true, 'pass_percent' => 50]);
+        foreach (config('madrasa_grading') as $definition) {
+            [$stageId, $gradeId] = [null, null];
 
-        foreach ([[90, 'ممتاز', 'Excellent'], [80, 'جيد جدًا', 'Very good'], [70, 'جيد', 'Good'], [50, 'مقبول', 'Pass'], [0, 'غير مجتاز', 'Not passed']] as [$min, $ar, $en]) {
-            $scale->bands()->create(['min_percent' => $min, 'label_ar' => $ar, 'label_en' => $en]);
+            if (str_starts_with($definition['scope'], 'grade:')) {
+                [, $stageCode, $sequence] = explode(':', $definition['scope']);
+                $gradeId = GradeLevel::query()->where('sequence', (int) $sequence)
+                    ->whereHas('stage', fn ($q) => $q->where('code', $stageCode))->value('id');
+                if ($gradeId === null) {
+                    continue;
+                }
+            } elseif ($definition['scope'] !== 'default') {
+                $stageId = Stage::query()->where('code', $definition['scope'])->value('id');
+                if ($stageId === null) {
+                    continue;
+                }
+            }
+
+            $scale = GradingScale::query()->create([
+                'stage_id' => $stageId,
+                'grade_level_id' => $gradeId,
+                'name' => $definition['name'],
+                'is_default' => $definition['scope'] === 'default',
+                'pass_percent' => $definition['pass_percent'],
+            ]);
+
+            foreach ($definition['bands'] as [$min, $ar, $en]) {
+                $scale->bands()->create(['min_percent' => $min, 'label_ar' => $ar, 'label_en' => $en]);
+            }
         }
     }
 

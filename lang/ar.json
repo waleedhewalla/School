@@ -337,5 +337,21 @@
     "Use the school default instead": "العودة لسلم المدرسة الافتراضي",
     "Download PDF": "تنزيل PDF",
     "Two-factor sign-in is already on. Turn it off first.": "التحقق بخطوتين مفعّل. أوقفه أولًا ثم أعد إعداده.",
-    "You cannot grant a role with more access than your own.": "لا يمكنك منح دور بصلاحيات أوسع من صلاحياتك."
+    "You cannot grant a role with more access than your own.": "لا يمكنك منح دور بصلاحيات أوسع من صلاحياتك.",
+    "column.national_id": "رقم الهوية",
+    "column.full_name_ar": "اسم الطالب",
+    "column.name_en": "الاسم بالإنجليزية",
+    "column.gender": "الجنس",
+    "column.date_of_birth": "تاريخ الميلاد",
+    "column.nationality": "الجنسية",
+    "column.grade": "الصف",
+    "column.section": "الفصل",
+    "column.guardian_name": "اسم ولي الأمر",
+    "column.guardian_national_id": "هوية ولي الأمر",
+    "column.guardian_phone": "جوال ولي الأمر",
+    "Recognised columns": "الأعمدة التي تم التعرف عليها",
+    "No national ID column was found, so students will be imported without IDs and re-imports cannot detect duplicates. Check the file’s header row.": "لم نجد عمود رقم الهوية، لذا سيُستورد الطلاب بدون هوية ولن نتمكن من كشف التكرار عند إعادة الاستيراد. راجع صف العناوين في الملف.",
+    "Whole stage": "المرحلة كاملة",
+    "This uses a broader scale (shown below). Saving gives it its own scale.": "يُطبَّق هنا سلم أعم (معروض أدناه). الحفظ ينشئ سلمًا خاصًا.",
+    "Use the broader scale instead": "العودة للسلم الأعم"
 }

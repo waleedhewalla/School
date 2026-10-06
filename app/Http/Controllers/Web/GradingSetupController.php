@@ -94,18 +94,30 @@ class GradingSetupController extends Controller
         return back()->with('success', __('Copied to :count subjects.', ['count' => $count]));
     }
 
-    /** The default scale, or one stage's own scale (?stage_id=). */
+    /** The default scale, or the own scale of a stage (?stage_id=) or a grade (?grade_level_id=). */
     public function scale(Request $request): Response
     {
-        $stage = Stage::query()->find($request->integer('stage_id'));
-        $own = $stage ? GradingScale::query()->with('bands')->where('stage_id', $stage->id)->first() : null;
-        $scale = $stage ? ($own ?? GradingScale::forSchool()) : GradingScale::forSchool();
+        $grade = GradeLevel::query()->with('stage')->find($request->integer('grade_level_id'));
+        $stage = $grade ? null : Stage::query()->find($request->integer('stage_id'));
+
+        $own = match (true) {
+            $grade !== null => GradingScale::query()->with('bands')->where('grade_level_id', $grade->id)->first(),
+            $stage !== null => GradingScale::query()->with('bands')->where('stage_id', $stage->id)->whereNull('grade_level_id')->first(),
+            default => null,
+        };
+        // What currently applies, so the form starts from it.
+        $scale = $own ?? GradingScale::forSchool($grade?->stage_id ?? $stage?->id);
 
         return Inertia::render('Settings/Grading', [
-            'stages' => Stage::query()->orderBy('sequence')->get()->map(fn (Stage $s) => ['id' => $s->id, 'name' => $s->name]),
-            'stageId' => $stage?->id,
-            'usesDefault' => $stage !== null && $own === null,
+            'stages' => Stage::query()->with('gradeLevels')->orderBy('sequence')->get()->map(fn (Stage $s) => [
+                'id' => $s->id,
+                'name' => $s->name,
+                'grades' => $s->gradeLevels->map(fn (GradeLevel $g) => ['id' => $g->id, 'name' => $g->name]),
+            ]),
+            'scope' => $grade ? 'grade:'.$grade->id : ($stage ? 'stage:'.$stage->id : ''),
+            'usesDefault' => ($grade || $stage) && $own === null,
             'scale' => $scale ? [
+                'name' => $scale->name,
                 'pass_percent' => $scale->pass_percent,
                 'bands' => $scale->bands->map(fn ($b) => ['min_percent' => $b->min_percent, 'label_ar' => $b->label_ar, 'label_en' => $b->label_en])->values(),
             ] : null,
@@ -116,6 +128,7 @@ class GradingSetupController extends Controller
     {
         $data = $request->validate([
             'stage_id' => ['nullable', 'integer', ExistsInCurrentSchool::inTable('stages')],
+            'grade_level_id' => ['nullable', 'integer', ExistsInCurrentSchool::inTable('grade_levels')],
             'use_default' => ['sometimes', 'boolean'],
             'pass_percent' => ['required_unless:use_default,true', 'numeric', 'between:0,100'],
             'bands' => ['required_unless:use_default,true', 'array', 'min:2', 'max:12'],
@@ -123,11 +136,13 @@ class GradingSetupController extends Controller
             'bands.*.label_ar' => ['required', 'string', 'max:30'],
             'bands.*.label_en' => ['nullable', 'string', 'max:30'],
         ]);
-        $stageId = $data['stage_id'] ?? null;
+        $gradeId = $data['grade_level_id'] ?? null;
+        $stageId = $gradeId ? null : ($data['stage_id'] ?? null);
+        $own = fn () => GradingScale::query()->where('grade_level_id', $gradeId)->where('stage_id', $stageId);
 
-        // A stage can go back to the school default by dropping its own scale.
-        if ($stageId !== null && $request->boolean('use_default')) {
-            GradingScale::query()->where('stage_id', $stageId)->delete();
+        // A stage or grade can go back to the broader scale by dropping its own.
+        if (($gradeId || $stageId) && $request->boolean('use_default')) {
+            $own()->delete();
 
             return back()->with('success', __('Changes saved.'));
         }
@@ -136,9 +151,11 @@ class GradingSetupController extends Controller
             throw ValidationException::withMessages(['bands' => __('grades.bands_invalid')]);
         }
 
-        DB::transaction(function () use ($data, $stageId) {
-            $scale = GradingScale::query()->where('stage_id', $stageId)->first()
-                ?? GradingScale::query()->create(['stage_id' => $stageId, 'name' => 'السلم العام', 'is_default' => $stageId === null]);
+        DB::transaction(function () use ($data, $stageId, $gradeId, $own) {
+            $scale = $own()->first() ?? GradingScale::query()->create([
+                'stage_id' => $stageId, 'grade_level_id' => $gradeId,
+                'name' => 'السلم العام', 'is_default' => ! $stageId && ! $gradeId,
+            ]);
             $scale->update(['pass_percent' => $data['pass_percent']]);
             $scale->bands()->delete();
             foreach ($data['bands'] as $band) {

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\SchoolRole;
+use App\Models\Campus;
 use App\Models\Section;
 use App\Models\Student;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -118,5 +119,59 @@ class StudentImportTest extends TestCase
         $this->get('/students/import/template')->assertOk()->assertDownload('students-template.xlsx');
 
         $this->actingAs($data['teacher'])->get('/students/import')->assertForbidden();
+    }
+
+    public function test_real_world_noor_layout(): void
+    {
+        Storage::fake('local');
+        $school = $this->createSchool();
+        $data = $this->seedSchoolData($school);
+        $this->inSchool($school, fn () => Campus::query()->update(['gender' => 'boys']));
+        $this->actingAs($this->memberOf($school, SchoolRole::Registrar));
+
+        // Title rows, a header with brackets and slashes, no gender column, IDs as
+        // numbers / scientific notation, grade and section in one cell.
+        $path = tempnam(sys_get_temp_dir(), 'noor').'.xlsx';
+        $writer = new Writer;
+        $writer->openToFile($path);
+        $writer->addRow(Row::fromValues(['المملكة العربية السعودية']));
+        $writer->addRow(Row::fromValues(['وزارة التعليم']));
+        $writer->addRow(Row::fromValues(['البيانات الخاصة بالإرشاد الطلابي']));
+        $writer->addRow(Row::fromValues([]));
+        $writer->addRow(Row::fromValues(['م', 'الاسم', 'السجل المدني / الإقامة', 'تاريخ الميلاد (هـ)', 'الصف', 'الفصل', 'جوال الطالب', 'رقم الجوال']));
+        $writer->addRow(Row::fromValues([1, 'سلمان فهد الدوسري', (float) $this->saudiId(777), '1440/09/09', 'أول ابتدائي', 2, '0500000001', '0551119999']));
+        $writer->addRow(Row::fromValues([2, 'بدر فهد الدوسري', sprintf('%.9E', (float) $this->saudiId(778)), '1441/01/01', 'الأول الابتدائي / 2', null, '', '0551119999']));
+        $writer->close();
+
+        $this->post('/students/import/preview', ['file' => new UploadedFile($path, 'StudentGuidance.xlsx', null, null, true), 'academic_year_id' => $data['year']->id])
+            ->assertRedirect('/students/import');
+        $this->get('/students/import')->assertInertia(fn (Assert $page) => $page
+            ->where('report.0.row', 6)
+            ->where('columns', fn ($c) => collect($c)->contains('national_id') && ! collect($c)->contains('student_phone'))
+            ->where('report.0.status', 'ready')
+            ->where('report.1.status', 'ready'));
+
+        $this->post('/students/import')->assertSessionHas('success');
+
+        $this->inSchool($school, function () {
+            $salman = Student::query()->where('first_name_ar', 'سلمان')->sole();
+            $badr = Student::query()->where('first_name_ar', 'بدر')->sole();
+            $this->assertSame('male', $salman->gender->value);
+            $this->assertSame($this->saudiId(777), $salman->national_id);
+            $this->assertSame($this->saudiId(778), $badr->national_id);
+            $this->assertSame('2', Section::query()->find($badr->enrollments()->first()->section_id)->name);
+            $this->assertSame($salman->family_id, $badr->family_id);
+            $this->assertSame('966551119999', $salman->guardians()->first()->phone);
+        });
+    }
+
+    public function test_old_xls_files_get_a_clear_message(): void
+    {
+        $school = $this->createSchool();
+        $data = $this->seedSchoolData($school);
+        $this->actingAs($this->memberOf($school, SchoolRole::Registrar));
+
+        $this->post('/students/import/preview', ['file' => UploadedFile::fake()->create('noor.xls', 10), 'academic_year_id' => $data['year']->id])
+            ->assertSessionHasErrors(['file' => 'صيغة ‎.xls القديمة غير مدعومة. افتح الملف في Excel واحفظه بصيغة ‎.xlsx ثم ارفعه.']);
     }
 }

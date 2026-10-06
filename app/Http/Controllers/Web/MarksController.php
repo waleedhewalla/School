@@ -50,7 +50,7 @@ class MarksController extends Controller
             ]),
             'filters' => ['term_id' => $term?->id, 'section_id' => $chosen?->section_id, 'subject_id' => $chosen?->subject_id],
             'sheet' => $term && $chosen ? $this->sheet($chosen->section, $term, $chosen->subject, $user) : null,
-            'scale' => ($scale = GradingScale::forSchool($chosen?->section->gradeLevel->stage_id)) ? [
+            'scale' => ($scale = GradingScale::forSchool($chosen?->section->gradeLevel->stage_id, $chosen?->section->grade_level_id)) ? [
                 'pass_percent' => $scale->pass_percent,
                 'bands' => $scale->bands->map(fn ($b) => ['min_percent' => $b->min_percent, 'label' => $b->label])->values(),
             ] : null,

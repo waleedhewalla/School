@@ -50,6 +50,7 @@ php artisan test        # test suite
 
 - [Analysis of 10 open-source systems](docs/repo-analysis.md)
 - [Roadmap](docs/roadmap.md)
+- [Market research and decisions](docs/market-research.md)
 - [Architecture](docs/architecture.md)
 - [Security review](docs/security-review.md), [performance](docs/performance.md), [production checklist](docs/deployment.md)
 - [API v1](docs/api.md)

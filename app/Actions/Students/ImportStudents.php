@@ -3,6 +3,7 @@
 namespace App\Actions\Students;
 
 use App\Models\AcademicYear;
+use App\Models\Campus;
 use App\Models\GradeLevel;
 use App\Models\Guardian;
 use App\Models\Section;
@@ -10,6 +11,7 @@ use App\Models\Student;
 use App\Rules\SaudiNationalId;
 use App\Support\ArabicName;
 use App\Support\Dates\SchoolDate;
+use App\Support\Import\GradeNameResolver;
 use App\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
@@ -34,14 +36,16 @@ class ImportStudents
      */
     public function handle(array $rows, AcademicYear $year, bool $commit): array
     {
-        $grades = GradeLevel::query()->get();
+        $grades = GradeLevel::query()->with('stage')->get();
+        $resolver = new GradeNameResolver($grades);
+        $defaultGender = $this->schoolGender();
         $sections = Section::query()->where('academic_year_id', $year->id)->get();
         $existingIds = Student::withTrashed()->whereNotNull('national_id')->pluck('national_id')->flip();
         $seenIds = [];
         $report = [];
 
         foreach ($rows as ['row' => $line, 'values' => $values]) {
-            [$data, $errors, $notes] = $this->parse($values, $grades, $sections, $year);
+            [$data, $errors, $notes] = $this->parse($values, $resolver, $sections, $year, $defaultGender);
             $name = $values['full_name_ar'] ?? '';
             $nationalId = $data['national_id'] ?? null;
 
@@ -86,8 +90,14 @@ class ImportStudents
     }
 
     /** @return array{0: array<string, mixed>, 1: list<string>, 2: list<string>} data, errors, notes */
-    private function parse(array $v, Collection $grades, Collection $sections, AcademicYear $year): array
+    private function parse(array $v, GradeNameResolver $resolver, Collection $sections, AcademicYear $year, ?string $defaultGender): array
     {
+        // A grade cell may also carry the section: "الأول المتوسط / 1" or "1/أ".
+        if (is_string($v['grade'] ?? null) && blank($v['section'] ?? null)
+            && preg_match('#^(.+?)\s*[/\\\-–]\s*([0-9٠-٩]{1,2}|[\p{Arabic}A-Za-z]{1,2})$#u', trim($v['grade']), $m)) {
+            [$v['grade'], $v['section']] = [trim($m[1]), trim($m[2])];
+        }
+
         $errors = [];
         $notes = [];
 
@@ -101,7 +111,7 @@ class ImportStudents
             $errors[] = __('import.invalid_national_id');
         }
 
-        $gender = $this->gender($v['gender'] ?? null);
+        $gender = $this->gender($v['gender'] ?? null) ?? (blank($v['gender'] ?? null) ? $defaultGender : null);
         if ($gender === null) {
             $errors[] = __('import.invalid_gender');
         }
@@ -111,7 +121,7 @@ class ImportStudents
             $errors[] = __('import.invalid_date');
         }
 
-        $grade = $this->grade((string) ($v['grade'] ?? ''), $grades);
+        $grade = $resolver->resolve((string) ($v['grade'] ?? ''));
         if ($grade === null) {
             $errors[] = __('import.unknown_grade', ['grade' => (string) ($v['grade'] ?? '')]);
         }
@@ -201,8 +211,12 @@ class ImportStudents
         if ($value === null || $value === '') {
             return null;
         }
-        if (is_float($value)) {
-            $value = number_format($value, 0, '', '');
+        // Spreadsheets store IDs as numbers, sometimes in scientific notation ("1.012345678E+9").
+        if (is_string($value) && preg_match('/^\s*\d+(\.\d+)?e\+?\d+\s*$/i', $value)) {
+            $value = (float) $value;
+        }
+        if (is_float($value) || is_int($value)) {
+            $value = number_format((float) $value, 0, '', '');
         }
 
         $digits = preg_replace('/\D+/', '', strtr((string) $value, ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9']));
@@ -255,12 +269,19 @@ class ImportStudents
         return trim(strtr($value, ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9', 'هـ' => '', 'م' => '']));
     }
 
-    private function grade(string $value, Collection $grades): ?GradeLevel
+    /**
+     * Saudi public schools are single-sex: when every campus is for boys
+     * (or every one for girls) a missing gender column defaults to that.
+     */
+    private function schoolGender(): ?string
     {
-        $wanted = ArabicName::normalize($value);
+        $genders = Campus::query()->pluck('gender')->unique()->values();
 
-        return $wanted === '' ? null : $grades->first(fn (GradeLevel $g) => ArabicName::normalize($g->name_ar) === $wanted
-            || ($g->name_en && ArabicName::normalize($g->name_en) === $wanted));
+        return match ($genders->all()) {
+            ['boys'] => 'male',
+            ['girls'] => 'female',
+            default => null,
+        };
     }
 
     private function sectionName(mixed $value): ?string

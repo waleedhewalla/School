@@ -5,20 +5,26 @@ import AppLayout from '../../layouts/AppLayout.vue';
 import SettingsTabs from '../../components/SettingsTabs.vue';
 import { useT } from '../../lib/i18n';
 
-const props = defineProps({ scale: Object, stages: Array, stageId: Number, usesDefault: Boolean });
+const props = defineProps({ scale: Object, stages: Array, scope: String, usesDefault: Boolean });
 const t = useT();
 
-const stage = ref(props.stageId ?? '');
-watch(stage, (id) => router.get('/settings/grading', id ? { stage_id: id } : {}, { replace: true }));
+// "" = school default, "stage:ID" or "grade:ID".
+const scope = ref(props.scope ?? '');
+const [kind, scopeId] = (props.scope ?? '').split(':');
+watch(scope, (value) => {
+    const [k, id] = value.split(':');
+    router.get('/settings/grading', k === 'grade' ? { grade_level_id: id } : (k === 'stage' ? { stage_id: id } : {}), { replace: true });
+});
 
 const form = useForm({
-    stage_id: props.stageId ?? null,
+    stage_id: kind === 'stage' ? Number(scopeId) : null,
+    grade_level_id: kind === 'grade' ? Number(scopeId) : null,
     pass_percent: props.scale?.pass_percent ?? 50,
     bands: (props.scale?.bands ?? []).map((b) => ({ ...b })),
 });
 const add = () => form.bands.push({ min_percent: 0, label_ar: '', label_en: '' });
 const submit = () => form.transform((d) => ({ ...d, bands: [...d.bands].sort((a, b) => b.min_percent - a.min_percent) })).put('/settings/grading', { preserveScroll: true });
-const backToDefault = () => router.put('/settings/grading', { stage_id: props.stageId, use_default: true }, { preserveScroll: true });
+const backToDefault = () => router.put('/settings/grading', { stage_id: form.stage_id, grade_level_id: form.grade_level_id, use_default: true }, { preserveScroll: true });
 </script>
 
 <template>
@@ -27,12 +33,15 @@ const backToDefault = () => router.put('/settings/grading', { stage_id: props.st
         <form class="max-w-2xl space-y-4" @submit.prevent="submit">
             <div>
                 <label class="label" for="stage">{{ t('Applies to') }}</label>
-                <select id="stage" v-model="stage" class="input max-w-xs">
+                <select id="stage" v-model="scope" class="input max-w-sm">
                     <option value="">{{ t('School default (all stages)') }}</option>
-                    <option v-for="s in stages" :key="s.id" :value="s.id">{{ s.name }}</option>
+                    <optgroup v-for="s in stages" :key="s.id" :label="s.name">
+                        <option :value="`stage:${s.id}`">{{ t('Whole stage') }} — {{ s.name }}</option>
+                        <option v-for="g in s.grades" :key="g.id" :value="`grade:${g.id}`">{{ g.name }}</option>
+                    </optgroup>
                 </select>
             </div>
-            <p v-if="stageId && usesDefault" class="rounded-lg bg-surface px-4 py-3 text-sm text-muted">{{ t('This stage uses the school default. Saving below gives it its own scale.') }}</p>
+            <p v-if="scope && usesDefault" class="rounded-lg bg-surface px-4 py-3 text-sm text-muted">{{ t('This uses a broader scale (shown below). Saving gives it its own scale.') }}</p>
             <p class="text-sm text-muted">{{ t('Each band starts at its minimum percentage and runs up to the next band. Check the bands and pass mark against current Ministry rules for each stage.') }}</p>
             <section class="card">
                 <label class="label" for="pass">{{ t('Pass mark %') }}</label>
@@ -62,7 +71,7 @@ const backToDefault = () => router.put('/settings/grading', { stage_id: props.st
             <p v-if="Object.keys(form.errors).length" class="text-sm text-danger" role="alert">{{ Object.values(form.errors)[0] }}</p>
             <div class="flex gap-2">
                 <button type="submit" class="btn-primary" :disabled="form.processing">{{ t('Save changes') }}</button>
-                <button v-if="stageId && !usesDefault" type="button" class="btn-ghost" @click="backToDefault">{{ t('Use the school default instead') }}</button>
+                <button v-if="scope && !usesDefault" type="button" class="btn-ghost" @click="backToDefault">{{ t('Use the broader scale instead') }}</button>
             </div>
         </form>
     </AppLayout>

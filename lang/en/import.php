@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'xls_not_supported' => 'The old .xls format is not supported. Open the file in Excel, save it as .xlsx and upload it again.',
     'unreadable' => 'The file could not be read. Make sure it is an Excel .xlsx file.',
     'too_many_rows' => 'The file has more than :max rows. Split it by stage and upload in parts.',
     'already_exists' => 'National ID already registered; skipped.',

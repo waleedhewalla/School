@@ -26,7 +26,7 @@ class TermResults
      */
     public static function forSection(Section $section, Term $term, ?Collection $students = null): array
     {
-        $scale = GradingScale::forSchool($section->gradeLevel()->value('stage_id'));
+        $scale = GradingScale::forSchool($section->gradeLevel()->value('stage_id'), (int) $section->grade_level_id);
         $students ??= Student::query()->inSection($section->id)->orderBy('family_name_ar')->orderBy('first_name_ar')->get();
 
         $components = AssessmentComponent::query()

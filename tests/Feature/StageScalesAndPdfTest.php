@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Enums\SchoolRole;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
+use App\Models\GradeLevel;
 use App\Models\GradingScale;
+use App\Models\Stage;
 use App\Models\Term;
 use App\Support\Grades\TermResults;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,32 +19,57 @@ class StageScalesAndPdfTest extends TestCase
 {
     use CreatesSchools, RefreshDatabase;
 
-    public function test_a_stage_can_have_its_own_scale(): void
+    public function test_new_schools_get_ministry_based_scales(): void
+    {
+        $school = $this->createSchool();
+
+        $this->inSchool($school, function () {
+            $scale = fn (string $stage, ?int $grade = null) => GradingScale::forSchool(
+                Stage::query()->where('code', $stage)->value('id'),
+                $grade ? GradeLevel::query()->whereHas('stage', fn ($q) => $q->where('code', $stage))->where('sequence', $grade)->value('id') : null,
+            );
+
+            $this->assertSame(75.0, $scale('primary', 1)->pass_percent);
+            $this->assertSame('متفوق', $scale('primary', 2)->bandFor(96)->label_ar);
+            $this->assertSame('مقبول', $scale('primary', 4)->bandFor(55)->label_ar);
+            $this->assertSame('مقبول', $scale('intermediate', 1)->bandFor(55)->label_ar);
+            $this->assertSame('ممتاز مرتفع', $scale('secondary', 3)->bandFor(97)->label_ar);
+            $this->assertSame('ضعيف', $scale('secondary', 3)->bandFor(55)->label_ar);
+            $this->assertTrue($scale('kg', 2)->passes(10));
+        });
+    }
+
+    public function test_grade_then_stage_then_default(): void
     {
         $school = $this->createSchool();
         $d = $this->seedSchoolData($school);
         $this->actingAs($this->memberOf($school, SchoolRole::SchoolAdmin));
         $term = $this->inSchool($school, function () use ($d) {
-            [$classwork, $final] = AssessmentComponent::query()->orderBy('sequence')->get();
+            [, $final] = AssessmentComponent::query()->orderBy('sequence')->get();
             AssessmentScore::query()->create(['assessment_component_id' => $final->id, 'student_id' => $d['students'][0]->id, 'score' => 20]);
 
             return Term::query()->first();
         });
-        // 18/20*40 + 20/40*60 = 66% → "مقبول" on the default scale (pass 50).
+        // 18/20*40 + 20/40*60 = 66%.
         $result = fn () => $this->inSchool($school, fn () => collect(TermResults::forSection($d['sectionA'], $term)['students'])
             ->firstWhere('student_id', $d['students'][0]->id)['subjects'][$d['subject']->id]);
+
+        // Grade 1's own (mastery) scale.
+        $this->assertSame(['غير مجتاز', false], [$result()['grade'], $result()['passed']]);
+
+        // Drop it: the school default applies.
+        $this->put('/settings/grading', ['grade_level_id' => $d['grade']->id, 'use_default' => true])->assertSessionHasNoErrors();
         $this->assertSame(['مقبول', true], [$result()['grade'], $result()['passed']]);
 
-        // Primary gets its own stricter scale.
+        // A primary-stage scale beats the default.
         $this->put('/settings/grading', ['stage_id' => $d['grade']->stage_id, 'pass_percent' => 70, 'bands' => [
             ['min_percent' => 85, 'label_ar' => 'متفوق'], ['min_percent' => 70, 'label_ar' => 'متمكن'], ['min_percent' => 0, 'label_ar' => 'يحتاج دعمًا'],
         ]])->assertSessionHasNoErrors();
         $this->assertSame(['يحتاج دعمًا', false], [$result()['grade'], $result()['passed']]);
 
-        // Back to the default.
+        // And the stage can go back to the default.
         $this->put('/settings/grading', ['stage_id' => $d['grade']->stage_id, 'use_default' => true])->assertSessionHasNoErrors();
         $this->assertSame('مقبول', $result()['grade']);
-        $this->assertSame(1, $this->inSchool($school, fn () => GradingScale::query()->count()));
     }
 
     public function test_bulk_pdf_through_gotenberg(): void

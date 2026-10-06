@@ -5,7 +5,7 @@ import AppLayout from '../../layouts/AppLayout.vue';
 import FieldError from '../../components/FieldError.vue';
 import { useT } from '../../lib/i18n';
 
-const props = defineProps({ years: Array, report: Array, year: Object });
+const props = defineProps({ years: Array, report: Array, year: Object, columns: { type: Array, default: () => [] } });
 const t = useT();
 
 const form = useForm({ file: null, academic_year_id: props.years.find((y) => y.is_current)?.id ?? props.years[0]?.id ?? null });
@@ -54,6 +54,8 @@ const cancel = () => router.delete('/students/import');
                     <button type="button" class="btn-primary" :disabled="!counts.ready" @click="confirmImport">{{ t('Import :n students', { n: counts.ready }) }}</button>
                 </div>
             </div>
+            <p class="mb-2 text-sm text-muted">{{ t('Recognised columns') }}: {{ columns.map((c) => t(`column.${c}`)).join('، ') }}</p>
+            <p v-if="!columns.includes('national_id')" class="mb-3 rounded-lg bg-warn-soft px-4 py-2 text-sm text-warn">{{ t('No national ID column was found, so students will be imported without IDs and re-imports cannot detect duplicates. Check the file’s header row.') }}</p>
             <p v-if="counts.error" class="mb-3 text-sm text-muted">{{ t('Rows with errors are skipped. Fix them in the file and upload it again; already-imported students are skipped automatically.') }}</p>
 
             <div class="card overflow-x-auto p-0">

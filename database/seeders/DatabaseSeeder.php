@@ -61,10 +61,10 @@ class DatabaseSeeder extends Seeder
                 'starts_on' => '2026-08-23',
                 'ends_on' => '2027-06-10',
             ]);
+            // Two semesters, as in Saudi general education from 1447 (dates illustrative).
             $year->terms()->createMany([
-                ['name_ar' => 'الفصل الدراسي الأول', 'name_en' => 'Term 1', 'sequence' => 1, 'starts_on' => '2026-08-23', 'ends_on' => '2026-11-19'],
-                ['name_ar' => 'الفصل الدراسي الثاني', 'name_en' => 'Term 2', 'sequence' => 2, 'starts_on' => '2026-11-29', 'ends_on' => '2027-03-04'],
-                ['name_ar' => 'الفصل الدراسي الثالث', 'name_en' => 'Term 3', 'sequence' => 3, 'starts_on' => '2027-03-14', 'ends_on' => '2027-06-10'],
+                ['name_ar' => 'الفصل الدراسي الأول', 'name_en' => 'Semester 1', 'sequence' => 1, 'starts_on' => '2026-08-23', 'ends_on' => '2027-01-07'],
+                ['name_ar' => 'الفصل الدراسي الثاني', 'name_en' => 'Semester 2', 'sequence' => 2, 'starts_on' => '2027-01-17', 'ends_on' => '2027-06-10'],
             ]);
             $year->makeCurrent();
 

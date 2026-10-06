@@ -35,11 +35,17 @@ class StudentImportController extends Controller
             'years' => AcademicYear::query()->orderByDesc('starts_on')->get(['id', 'name', 'is_current']),
             'report' => $pending['report'] ?? null,
             'year' => $pending ? AcademicYear::query()->find($pending['year'])?->only(['id', 'name']) : null,
+            'columns' => $pending['columns'] ?? [],
         ]);
     }
 
     public function preview(Request $request, ImportStudents $import, CurrentSchool $currentSchool): RedirectResponse
     {
+        // Old .xls files (and HTML saved as .xls) can't be read; ask for .xlsx.
+        if ($request->file('file') && strtolower($request->file('file')->getClientOriginalExtension()) === 'xls') {
+            throw ValidationException::withMessages(['file' => __('import.xls_not_supported')]);
+        }
+
         $data = $request->validate([
             'file' => ['required', 'file', 'mimes:xlsx', 'max:5120'],
             'academic_year_id' => ['required', 'integer', ExistsInCurrentSchool::in('academic_years')],
@@ -70,6 +76,7 @@ class StudentImportController extends Controller
             'token' => $token,
             'year' => $year->id,
             'report' => $import->handle($sheet['rows'], $year, commit: false),
+            'columns' => array_values(array_diff(array_keys($sheet['columns']), ['student_phone'])),
         ]);
 
         return redirect()->route('students.import');

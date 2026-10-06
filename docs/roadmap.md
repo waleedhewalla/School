@@ -68,18 +68,24 @@ Slice 6 ✅
 - [x] Bulk report-card PDF through Gotenberg (`PDF_DRIVER=gotenberg`), fonts embedded
 
 Next (Phase 1 wrap-up)
-- [ ] Verify Noor column aliases against a real export
-- [ ] Confirm the default grading bands and pass marks per stage with the Ministry rules
+- [x] Noor importer hardened from market research (header-row detection, grade-name forms, IDs, combined cells); still to confirm with a real export
+- [x] Ministry-based starting scales per stage and for grades 1–2; still to confirm against the 2025 official PDFs
 - [x] Security review ([security-review.md](security-review.md)) — 4 medium and 7 low findings, all fixed with regression tests
 - [x] Load test with a 600-student school ([performance.md](performance.md)); production checklist in [deployment.md](deployment.md)
 
-## Phase 2 — Finance and admissions
+## Phase 2 — Admissions (fees and ZATCA deferred)
 
-- Admissions: intake windows, online application, documents, interview, offer, enroll — Frappe, TareqMonwer
-- Fees: **fee structure → fee schedule → invoices** as a queued job — Frappe; installments, sibling/staff discounts, late fees — ICTSchool
-- **ZATCA** Phase 2 e-invoicing (UBL XML, signature, QR, API submission)
-- Online payment: mada, Apple Pay, SADAD (Moyasar / HyperPay / Tap)
-- Subscription billing for schools
+Scope from [market-research.md](market-research.md):
+- [ ] Intake windows per year and grade, with seat counts
+- [ ] Public Arabic-first application form (phone-friendly, resumable), sibling flag
+- [ ] Age check against a per-year cutoff table edited by the school
+- [ ] Document checklist per grade and nationality, uploads, accept/reject with reason
+- [ ] Pipeline: submitted → review → assessment booked → assessed → offered / waitlisted / rejected → accepted → enrolled (Noor transfer pending)
+- [ ] Status notifications by SMS / WhatsApp / email
+- [ ] One-click enrol into student, guardian and family records
+- [ ] Waitlist with sibling priority as a sort
+
+Deferred (product decision): fee plans, invoices, online payment (mada, Apple Pay, SADAD), ZATCA Phase 2 e-invoicing, subscription billing, application/seat fees.
 
 ## Phase 3 — Extended
 

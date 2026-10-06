@@ -41,5 +41,16 @@
     "role.teacher": "Teacher",
     "role.accountant": "Accountant",
     "role.guardian": "Guardian",
-    "role.student": "Student"
+    "role.student": "Student",
+    "column.national_id": "National ID",
+    "column.full_name_ar": "Student name",
+    "column.name_en": "English name",
+    "column.gender": "Gender",
+    "column.date_of_birth": "Date of birth",
+    "column.nationality": "Nationality",
+    "column.grade": "Grade",
+    "column.section": "Section",
+    "column.guardian_name": "Guardian name",
+    "column.guardian_national_id": "Guardian ID",
+    "column.guardian_phone": "Guardian mobile"
 }

@@ -5,6 +5,7 @@ namespace App\Support\Import;
 use App\Support\ArabicName;
 use DateTimeInterface;
 use OpenSpout\Common\Entity\Row;
+use OpenSpout\Reader\XLSX\Options;
 use OpenSpout\Reader\XLSX\Reader;
 use OpenSpout\Writer\XLSX\Writer;
 
@@ -21,22 +22,24 @@ class NoorStudentSheet
 {
     /** Canonical column => accepted header texts (compared after ArabicName::normalize). */
     public const COLUMNS = [
-        'national_id' => ['رقم الهوية', 'رقم هوية الطالب', 'السجل المدني', 'رقم السجل المدني', 'هوية الطالب', 'رقم الاقامة', 'national id', 'id number'],
-        'full_name_ar' => ['اسم الطالب', 'الاسم', 'اسم الطالب رباعي', 'الاسم الرباعي', 'اسم الطالب بالعربي', 'student name'],
+        'national_id' => ['رقم الهوية', 'رقم هوية الطالب', 'السجل المدني', 'رقم السجل المدني', 'هوية الطالب', 'رقم الاقامة', 'السجل المدني او الاقامة', 'السجل المدني الاقامة', 'الهوية الاقامة', 'رقم السجل المدني الاقامة', 'رقم الهوية الاقامة', 'الهوية', 'رقم الهوية الوطنية', 'السجل', 'national id', 'id number'],
+        'full_name_ar' => ['اسم الطالب', 'اسم الطالبة', 'الاسم', 'اسم الطالب رباعي', 'اسم الطالب رباعيا', 'الاسم رباعي', 'الاسم الرباعي', 'اسم الطالب بالعربي', 'student name'],
         'name_en' => ['اسم الطالب بالانجليزي', 'الاسم بالانجليزي', 'الاسم باللغة الانجليزية', 'english name', 'name (english)'],
         'gender' => ['الجنس', 'gender'],
-        'date_of_birth' => ['تاريخ الميلاد', 'تاريخ الميلاد ميلادي', 'تاريخ الميلاد هجري', 'date of birth', 'birth date'],
+        'date_of_birth' => ['تاريخ الميلاد', 'تاريخ الميلاد ميلادي', 'تاريخ الميلاد هجري', 'تاريخ الميلاد هـ', 'تاريخ الميلاد م', 'تاريخ الميلاد الهجري', 'تاريخ الميلاد الميلادي', 'date of birth', 'birth date'],
         'nationality' => ['الجنسية', 'nationality'],
-        'grade' => ['الصف', 'الصف الدراسي', 'grade'],
-        'section' => ['الفصل', 'الشعبة', 'رقم الفصل', 'section', 'class'],
+        'grade' => ['الصف', 'الصف الدراسي', 'المستوى', 'السنة الدراسية', 'grade'],
+        'section' => ['الفصل', 'الشعبة', 'رقم الفصل', 'رقم الشعبة', 'اسم الفصل', 'section', 'class'],
         'guardian_name' => ['اسم ولي الامر', 'ولي الامر', 'guardian name'],
         'guardian_national_id' => ['هوية ولي الامر', 'رقم هوية ولي الامر', 'guardian id'],
-        'guardian_phone' => ['جوال ولي الامر', 'رقم جوال ولي الامر', 'هاتف ولي الامر', 'رقم الجوال', 'الجوال', 'guardian phone', 'mobile'],
+        'guardian_phone' => ['جوال ولي الامر', 'رقم جوال ولي الامر', 'هاتف ولي الامر', 'رقم الجوال', 'الجوال', 'جوال', 'رقم الهاتف', 'الهاتف', 'guardian phone', 'mobile'],
+        // Read only so it is never mistaken for the guardian's number.
+        'student_phone' => ['جوال الطالب', 'رقم جوال الطالب', 'هاتف الطالب', 'student phone'],
     ];
 
     /** Headers written to the downloadable template. */
     public const TEMPLATE_HEADERS = [
-        'رقم الهوية', 'اسم الطالب', 'اسم الطالب بالانجليزي', 'الجنس', 'تاريخ الميلاد', 'الجنسية',
+        'رقم الهوية', 'اسم الطالب', 'اسم الطالب بالانجليزي', 'الجنس', 'تاريخ الميلاد (هـ)', 'الجنسية',
         'الصف', 'الفصل', 'اسم ولي الأمر', 'هوية ولي الأمر', 'جوال ولي الأمر',
     ];
 
@@ -44,23 +47,37 @@ class NoorStudentSheet
      * @return array{columns: array<string, int>, rows: list<array{row: int, values: array<string, mixed>}>}
      *                                                                                                       rows keyed by canonical column; row numbers as in Excel
      */
+    /**
+     * Noor exports usually have a few merged title rows above the real
+     * header row, so the header is the first row (within the first 15 of
+     * any sheet) that names the student column and at least one other.
+     *
+     * @return array{columns: array<string, int>, rows: list<array{row: int, values: array<string, mixed>}>}
+     *                                                                                                       rows keyed by canonical column; row numbers as in Excel
+     */
     public static function read(string $path, int $maxRows = PHP_INT_MAX): array
     {
-        $reader = new Reader;
+        // Keep empty rows so the row numbers we report match Excel's.
+        $reader = new Reader(new Options(SHOULD_PRESERVE_EMPTY_ROWS: true));
         $reader->open($path);
-
-        $columns = [];
-        $rows = [];
 
         try {
             foreach ($reader->getSheetIterator() as $sheet) {
+                $columns = [];
+                $rows = [];
                 $line = 0;
+
                 foreach ($sheet->getRowIterator() as $row) {
                     $line++;
                     $cells = $row->toArray();
 
                     if ($columns === []) {
-                        $columns = self::matchHeaders($cells);
+                        $found = self::matchHeaders($cells);
+                        if (isset($found['full_name_ar']) && count($found) >= 2) {
+                            $columns = $found;
+                        } elseif ($line >= 15) {
+                            continue 2; // not a student list; try the next sheet
+                        }
 
                         continue;
                     }
@@ -81,13 +98,15 @@ class NoorStudentSheet
                     }
                 }
 
-                break; // first sheet only
+                if ($columns !== []) {
+                    return ['columns' => $columns, 'rows' => $rows];
+                }
             }
         } finally {
             $reader->close();
         }
 
-        return ['columns' => $columns, 'rows' => $rows];
+        return ['columns' => [], 'rows' => []];
     }
 
     public static function writeTemplate(string $path): void
@@ -104,18 +123,24 @@ class NoorStudentSheet
         $aliases = [];
         foreach (self::COLUMNS as $key => $names) {
             foreach ($names as $name) {
-                $aliases[ArabicName::normalize($name)] = $key;
+                $aliases[self::normalizeHeader($name)] = $key;
             }
         }
 
         $columns = [];
         foreach ($cells as $index => $header) {
-            $key = $aliases[ArabicName::normalize((string) $header)] ?? null;
+            $key = $aliases[self::normalizeHeader((string) $header)] ?? null;
             if ($key !== null && ! isset($columns[$key])) {
                 $columns[$key] = $index;
             }
         }
 
         return $columns;
+    }
+
+    /** Headers are compared without brackets, slashes and punctuation: "تاريخ الميلاد (هـ)" = "تاريخ الميلاد هـ". */
+    private static function normalizeHeader(string $header): string
+    {
+        return ArabicName::normalize(preg_replace('/[()\[\]{}\/\\:\-_.،,*]+/u', ' ', $header));
     }
 }

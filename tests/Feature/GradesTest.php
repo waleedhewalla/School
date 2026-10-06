@@ -52,8 +52,9 @@ class GradesTest extends TestCase
         $results = $this->inSchool($d['school'], fn () => TermResults::forSection($d['sectionA'], $d['term']));
         $byId = collect($results['students'])->keyBy('student_id');
 
+        // Grade 1 uses the Ministry's standards-mastery scale (pass at 75).
         $this->assertSame(81.0, $byId[$ahmad->id]['subjects'][$d['subject']->id]['percent']);
-        $this->assertSame('جيد جدًا', $byId[$ahmad->id]['subjects'][$d['subject']->id]['grade']);
+        $this->assertSame('متمكن', $byId[$ahmad->id]['subjects'][$d['subject']->id]['grade']);
         $this->assertTrue($byId[$ahmad->id]['subjects'][$d['subject']->id]['passed']);
         $this->assertSame(30.0, $byId[$sara->id]['subjects'][$d['subject']->id]['percent']);
         $this->assertFalse($byId[$sara->id]['subjects'][$d['subject']->id]['passed']);

@@ -54,7 +54,8 @@ class SeedLargeDemo extends Command
             $days = (int) $this->option('days');
 
             $year = AcademicYear::query()->create(['name' => '1448', 'starts_on' => '2026-08-23', 'ends_on' => '2027-06-10']);
-            $term = $year->terms()->create(['name_ar' => 'الفصل الدراسي الأول', 'name_en' => 'Term 1', 'sequence' => 1, 'starts_on' => '2026-08-23', 'ends_on' => '2026-11-19']);
+            $term = $year->terms()->create(['name_ar' => 'الفصل الدراسي الأول', 'name_en' => 'Semester 1', 'sequence' => 1, 'starts_on' => '2026-08-23', 'ends_on' => '2027-01-07']);
+            $year->terms()->create(['name_ar' => 'الفصل الدراسي الثاني', 'name_en' => 'Semester 2', 'sequence' => 2, 'starts_on' => '2027-01-17', 'ends_on' => '2027-06-10']);
             $year->makeCurrent();
 
             $subjects = collect([['QURAN', 'القرآن الكريم'], ['ISL', 'الدراسات الإسلامية'], ['ARB', 'اللغة العربية'], ['MATH', 'الرياضيات'], ['SCI', 'العلوم'], ['ENG', 'اللغة الإنجليزية']])
@@ -116,7 +117,7 @@ class SeedLargeDemo extends Command
             $this->info("Attendance ({$days} days)…");
             $codes = AttendanceCode::query()->pluck('id', 'code');
             $teacherOf = TeachingAssignment::query()->where('is_homeroom', true)->with('staffMember')->get()->mapWithKeys(fn ($a) => [$a->section_id => $a->staffMember->user_id]);
-            $dates = collect(CarbonPeriod::create('2026-08-23', '2026-11-19'))
+            $dates = collect(CarbonPeriod::create('2026-08-23', '2027-01-07'))
                 ->filter(fn ($d) => in_array($d->dayOfWeek, [0, 1, 2, 3, 4], true))
                 ->take($days);
             foreach ($dates as $date) {
