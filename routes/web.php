@@ -9,8 +9,10 @@ use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\PortalController;
 use App\Http\Controllers\Web\PromotionController;
 use App\Http\Controllers\Web\SchoolSwitchController;
+use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\StudentController;
 use App\Http\Controllers\Web\StudentImportController;
+use App\Http\Controllers\Web\TimetableController;
 use App\Support\Locale;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -67,5 +69,20 @@ Route::middleware('auth')->group(function () {
         Route::post('/attendance/{section}', [AttendanceController::class, 'store'])->name('attendance.store');
 
         Route::get('/my/children', [PortalController::class, 'children'])->name('portal.children');
+
+        Route::get('/timetable', [TimetableController::class, 'index'])
+            ->middleware('can:'.Permission::AcademicStructureView)->name('timetable.index');
+        Route::post('/timetable/{section}', [TimetableController::class, 'place'])
+            ->middleware('can:'.Permission::TimetableManage)->name('timetable.place');
+        Route::get('/my/timetable', [TimetableController::class, 'mine'])->name('timetable.mine');
+
+        Route::middleware('can:'.Permission::TimetableManage)->group(function () {
+            Route::get('/settings/periods', [SettingsController::class, 'periods'])->name('settings.periods');
+            Route::put('/settings/periods', [SettingsController::class, 'savePeriods'])->name('settings.periods.save');
+        });
+        Route::middleware('can:'.Permission::SchoolManage)->group(function () {
+            Route::get('/settings/notifications', [SettingsController::class, 'notifications'])->name('settings.notifications');
+            Route::put('/settings/notifications', [SettingsController::class, 'saveNotifications'])->name('settings.notifications.save');
+        });
     });
 });

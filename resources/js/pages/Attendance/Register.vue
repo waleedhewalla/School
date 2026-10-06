@@ -4,7 +4,7 @@ import { router, useForm } from '@inertiajs/vue3';
 import AppLayout from '../../layouts/AppLayout.vue';
 import { useT } from '../../lib/i18n';
 
-const props = defineProps({ sections: Array, codes: Object, filters: Object, register: Object, canEdit: Boolean });
+const props = defineProps({ sections: Array, periods: Array, codes: Object, filters: Object, register: Object, canEdit: Boolean });
 const t = useT();
 
 const codes = computed(() => props.codes.data ?? props.codes);
@@ -53,7 +53,7 @@ const save = () => {
                 <label class="label" for="period">{{ t('Register') }}</label>
                 <select id="period" v-model.number="filters.period" class="input">
                     <option :value="0">{{ t('Daily') }}</option>
-                    <option v-for="n in 8" :key="n" :value="n">{{ t('Period :n', { n }) }}</option>
+                    <option v-for="p in periods" :key="p.sequence" :value="p.sequence">{{ p.name }}</option>
                 </select>
             </div>
         </div>

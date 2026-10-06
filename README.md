@@ -16,7 +16,8 @@ Phase 0 done, Phase 1 in progress — see [docs/roadmap.md](docs/roadmap.md).
 - Arabic / English with RTL, Umm al-Qura Hijri dates
 - Students, guardians, families, enrollment and promotion, staff and teaching assignments
 - Admission forms, Excel import in Noor's layout, year-end promotion
-- Daily and per-period attendance; SMS to guardians (Unifonic / Taqnyat); guardian portal
+- Bell schedule and timetables with clash checks; teacher's week and today's lessons
+- Daily and per-period attendance; guardian alerts by SMS (Unifonic / Taqnyat), WhatsApp and email; guardian portal
 - Web app (Inertia + Vue) and REST API v1 ([docs/api.md](docs/api.md))
 
 ## Run locally

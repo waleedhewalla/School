@@ -25,7 +25,7 @@ enum SchoolRole: string
                 Permission::AcademicStructureView, Permission::AcademicStructureManage,
                 Permission::StudentsView, Permission::StudentsManage, Permission::StaffView,
                 Permission::AttendanceView, Permission::AttendanceManage,
-                Permission::GradesView, Permission::AuditView,
+                Permission::GradesView, Permission::AuditView, Permission::TimetableManage,
             ],
             self::Registrar => [
                 Permission::AcademicStructureView, Permission::StudentsView,

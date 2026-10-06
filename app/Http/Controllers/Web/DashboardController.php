@@ -10,6 +10,7 @@ use App\Models\AcademicYear;
 use App\Models\AttendanceRecord;
 use App\Models\Enrollment;
 use App\Models\Section;
+use App\Models\TimetableEntry;
 use App\Support\Dates\SchoolDate;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Http\RedirectResponse;
@@ -39,7 +40,27 @@ class DashboardController extends Controller
 
         $sectionIds = Section::query()->when($year, fn ($q) => $q->where('academic_year_id', $year->id))->pluck('id');
 
+        $school = $currentSchool->get();
+        $weekday = now($school->timezone)->dayOfWeek; // 0 = Sunday
+        $lessonsToday = TimetableEntry::query()
+            ->with(['period', 'section.gradeLevel', 'teachingAssignment.subject'])
+            ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->id))
+            ->where('day', $weekday)
+            ->get()
+            ->sortBy('period.sequence')
+            ->values()
+            ->map(fn (TimetableEntry $e) => [
+                'period' => $e->period->name,
+                'period_sequence' => $e->period->sequence,
+                'time' => $e->period->startsAtShort().'–'.$e->period->endsAtShort(),
+                'section_id' => $e->section_id,
+                'section' => $e->section->gradeLevel->name.' / '.$e->section->name,
+                'subject' => $e->teachingAssignment->subject->name,
+                'room' => $e->room,
+            ]);
+
         return Inertia::render('Dashboard', [
+            'lessonsToday' => $lessonsToday,
             'today' => SchoolDate::display(now(), $currentSchool->get()->date_display),
             'year' => $year?->only(['id', 'name']),
             'stats' => [

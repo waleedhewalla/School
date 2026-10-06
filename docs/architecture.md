@@ -84,6 +84,16 @@ listener `NotifyGuardiansOfAbsence` reloads the records inside
 `CurrentSchool::run()`, texts the primary guardians (or all guardians with a
 mobile if none is primary) and writes a `message_logs` row per attempt.
 
+Channels (SMS, WhatsApp, email), which attendance codes alert, and quiet
+hours are per-school settings (`schools.notification_settings`,
+`attendance_codes.notify_guardian`). During quiet hours the listener's
+`withDelay()` holds the job until they end, so a queue worker
+(`php artisan queue:work`) must run in production.
+
+WhatsApp uses the `WhatsAppGateway` interface (`WHATSAPP_DRIVER=log|meta`) and
+sends a pre-approved template (`WHATSAPP_ATTENDANCE_TEMPLATE`) with four body
+parameters: school, student, status, date.
+
 SMS goes through the `SmsGateway` interface (`app/Support/Messaging`), chosen
 by `SMS_DRIVER`: `log` (default, development), `unifonic` or `taqnyat`.
 Provider failures are logged as `failed`, never thrown. Check both providers'
@@ -102,3 +112,14 @@ for the four-part name and `SchoolDate::fromHijri` for Hijri birth dates.
 The uploaded file sits in private storage between preview and confirm and is
 deleted afterwards. The aliases are based on common Noor export headers and
 must be checked against real exports from pilot schools.
+
+## Timetable
+
+`periods` is the school's bell schedule (`is_break` rows can't hold lessons);
+an attendance register's period number is the period's `sequence`.
+`timetable_entries` holds one lesson per section × day × period, with the
+teacher copied from the teaching assignment so a unique index backs the
+"no teacher in two places" rule. `PlaceLesson` checks teacher and room
+clashes with friendly messages; `AssignTeacher` moves existing lessons when a
+subject changes teacher, refusing if the new teacher is busy; `SavePeriods`
+won't delete a period that still has lessons.

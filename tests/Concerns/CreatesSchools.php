@@ -10,12 +10,14 @@ use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
 use App\Models\GradeLevel;
 use App\Models\MessageLog;
+use App\Models\Period;
 use App\Models\School;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
+use App\Models\TimetableEntry;
 use App\Models\User;
 use App\Rules\SaudiNationalId;
 use App\Support\Tenancy\CurrentSchool;
@@ -90,6 +92,14 @@ trait CreatesSchools
             app(RecordAttendance::class)->handle($sectionA, Carbon::parse('2026-09-01'), 0, [
                 ['student_id' => $students[0]->id, 'code' => 'P'],
             ], $teacher);
+
+            // Ahmad's teacher teaches section A math on Sunday, period 1.
+            TimetableEntry::query()->create([
+                'academic_year_id' => $year->id, 'section_id' => $sectionA->id,
+                'period_id' => Period::query()->where('sequence', 1)->value('id'),
+                'teaching_assignment_id' => TeachingAssignment::query()->where('section_id', $sectionA->id)->value('id'),
+                'staff_member_id' => $staff->id, 'day' => 0,
+            ]);
 
             MessageLog::query()->create([
                 'student_id' => $students[0]->id, 'channel' => 'sms', 'purpose' => 'attendance',

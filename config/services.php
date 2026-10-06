@@ -52,4 +52,19 @@ return [
         ],
     ],
 
+    /*
+    | WhatsApp to guardians. Driver: "log" (development) or "meta" (WhatsApp
+    | Cloud API). The template is created in WhatsApp Manager with four body
+    | parameters: school, student, status, date.
+    */
+    'whatsapp' => [
+        'driver' => env('WHATSAPP_DRIVER', 'log'),
+        'attendance_template' => env('WHATSAPP_ATTENDANCE_TEMPLATE', 'attendance_alert'),
+        'meta' => [
+            'token' => env('WHATSAPP_TOKEN'),
+            'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+            'url' => env('WHATSAPP_URL', 'https://graph.facebook.com/v21.0'),
+        ],
+    ],
+
 ];

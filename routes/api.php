@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\V1\StaffMemberController;
 use App\Http\Controllers\Api\V1\StudentController;
 use App\Http\Controllers\Api\V1\SubjectController;
 use App\Http\Controllers\Api\V1\TeachingAssignmentController;
+use App\Http\Controllers\Api\V1\TimetableController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->name('api.v1.')->middleware('locale')->group(function () {
@@ -81,6 +82,14 @@ Route::prefix('v1')->name('api.v1.')->middleware('locale')->group(function () {
             Route::get('attendance-codes', [AttendanceController::class, 'codes'])->name('attendance-codes.index');
             Route::get('sections/{section}/attendance', [AttendanceController::class, 'show'])->name('sections.attendance.show');
             Route::put('sections/{section}/attendance', [AttendanceController::class, 'store'])->name('sections.attendance.store');
+
+            // Bell schedule and timetables.
+            Route::get('periods', [TimetableController::class, 'periods'])->name('periods.index');
+            Route::put('periods', [TimetableController::class, 'savePeriods'])->middleware('can:'.Permission::TimetableManage)->name('periods.save');
+            Route::get('sections/{section}/timetable', [TimetableController::class, 'section'])->middleware($view)->name('sections.timetable');
+            Route::put('sections/{section}/timetable', [TimetableController::class, 'place'])->middleware('can:'.Permission::TimetableManage)->name('sections.timetable.place');
+            Route::delete('sections/{section}/timetable', [TimetableController::class, 'clear'])->middleware('can:'.Permission::TimetableManage)->name('sections.timetable.clear');
+            Route::get('my/timetable', [TimetableController::class, 'mine'])->name('my.timetable');
 
             // Guardian portal.
             Route::get('my/children', [MyChildrenController::class, 'index'])->name('my.children.index');

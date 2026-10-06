@@ -41,6 +41,8 @@ final class Permission
 
     public const FinanceManage = 'finance.manage';
 
+    public const TimetableManage = 'timetable.manage';
+
     public const AuditView = 'audit.view';
 
     /** @return list<string> */

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('student_id')->nullable()->constrained()->nullOnDelete();
             $table->string('channel', 20);
             $table->string('purpose', 40);
-            $table->string('to', 20);
+            $table->string('to');
             $table->text('body');
             $table->string('status', 10);
             $table->string('error')->nullable();

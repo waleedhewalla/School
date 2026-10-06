@@ -13,6 +13,7 @@ use App\Models\Family;
 use App\Models\GradeLevel;
 use App\Models\Guardian;
 use App\Models\MessageLog;
+use App\Models\Period;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Stage;
@@ -20,6 +21,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\Term;
+use App\Models\TimetableEntry;
 use App\Support\Tenancy\CurrentSchool;
 use App\Support\Tenancy\SchoolContextMismatch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -41,6 +43,7 @@ class TenantIsolationTest extends TestCase
             [Family::class], [Student::class], [Guardian::class], [StaffMember::class],
             [Enrollment::class], [TeachingAssignment::class],
             [AttendanceCode::class], [AttendanceRecord::class], [MessageLog::class],
+            [Period::class], [TimetableEntry::class],
         ];
     }
 

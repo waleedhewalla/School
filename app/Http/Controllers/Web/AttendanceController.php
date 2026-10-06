@@ -9,6 +9,7 @@ use App\Http\Resources\V1\AttendanceCodeResource;
 use App\Models\AcademicYear;
 use App\Models\AttendanceCode;
 use App\Models\AttendanceRecord;
+use App\Models\Period;
 use App\Models\Section;
 use App\Models\Student;
 use Illuminate\Http\RedirectResponse;
@@ -26,7 +27,7 @@ class AttendanceController extends Controller
         $data = $request->validate([
             'section_id' => ['nullable', 'integer'],
             'date' => ['nullable', 'date', 'before_or_equal:today'],
-            'period' => ['nullable', 'integer', 'min:0', 'max:12'],
+            'period' => ['nullable', 'integer', 'min:0', 'max:20'],
         ]);
 
         $date = Carbon::parse($data['date'] ?? now()->toDateString());
@@ -36,6 +37,7 @@ class AttendanceController extends Controller
 
         return Inertia::render('Attendance/Register', [
             'sections' => $sections->map(fn (Section $s) => ['id' => $s->id, 'label' => $s->gradeLevel->name.' / '.$s->name])->values(),
+            'periods' => Period::query()->lessons()->get()->map(fn (Period $p) => ['sequence' => $p->sequence, 'name' => $p->name]),
             'codes' => AttendanceCodeResource::collection(AttendanceCode::query()->orderBy('sequence')->get()),
             'filters' => ['section_id' => $section?->id, 'date' => $date->toDateString(), 'period' => $period],
             'register' => $section ? $this->register($section, $date, $period) : null,
@@ -49,7 +51,7 @@ class AttendanceController extends Controller
 
         $data = $request->validate([
             'date' => ['required', 'date', 'before_or_equal:today'],
-            'period' => ['required', 'integer', 'min:0', 'max:12'],
+            'period' => ['required', 'integer', 'min:0', 'max:20'],
             'records' => ['required', 'array', 'min:1', 'max:200'],
             'records.*.student_id' => ['required', 'integer', 'distinct'],
             'records.*.code' => ['required', 'string', 'max:5'],

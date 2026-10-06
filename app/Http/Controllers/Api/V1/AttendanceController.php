@@ -76,7 +76,7 @@ class AttendanceController extends Controller
     {
         $data = $request->validate([
             'date' => ['required', 'date', 'before_or_equal:today'],
-            'period' => ['sometimes', 'integer', 'min:0', 'max:12'],
+            'period' => ['sometimes', 'integer', 'min:0', 'max:20'],
         ]);
 
         return [Carbon::parse($data['date']), (int) ($data['period'] ?? AttendanceRecord::DAILY)];

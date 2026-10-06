@@ -22,5 +22,12 @@
     "import.ready": "Ready",
     "import.error": "Error",
     "import.skipped": "Already registered",
-    "import.imported": "Imported"
+    "import.imported": "Imported",
+    "day.0": "Sunday",
+    "day.1": "Monday",
+    "day.2": "Tuesday",
+    "day.3": "Wednesday",
+    "day.4": "Thursday",
+    "day.5": "Friday",
+    "day.6": "Saturday"
 }

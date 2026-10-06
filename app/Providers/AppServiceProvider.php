@@ -4,9 +4,12 @@ namespace App\Providers;
 
 use App\Models\User;
 use App\Support\Messaging\LogSmsGateway;
+use App\Support\Messaging\LogWhatsAppGateway;
+use App\Support\Messaging\MetaWhatsAppGateway;
 use App\Support\Messaging\SmsGateway;
 use App\Support\Messaging\TaqnyatSmsGateway;
 use App\Support\Messaging\UnifonicSmsGateway;
+use App\Support\Messaging\WhatsAppGateway;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -34,6 +37,14 @@ class AppServiceProvider extends ServiceProvider
             ),
             default => new LogSmsGateway,
         });
+
+        $this->app->singleton(WhatsAppGateway::class, fn () => config('services.whatsapp.driver') === 'meta'
+            ? new MetaWhatsAppGateway(
+                (string) config('services.whatsapp.meta.token'),
+                (string) config('services.whatsapp.meta.phone_number_id'),
+                (string) config('services.whatsapp.meta.url'),
+            )
+            : new LogWhatsAppGateway);
     }
 
     /**

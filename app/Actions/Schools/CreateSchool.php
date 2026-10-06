@@ -6,6 +6,7 @@ use App\Enums\SchoolRole;
 use App\Models\AttendanceCode;
 use App\Models\Campus;
 use App\Models\GradeLevel;
+use App\Models\Period;
 use App\Models\School;
 use App\Models\Stage;
 use App\Models\User;
@@ -40,6 +41,7 @@ class CreateSchool
 
                 $this->seedStages();
                 $this->seedAttendanceCodes();
+                $this->seedPeriods();
             });
 
             $this->provisionRoles->handle($school);
@@ -50,6 +52,30 @@ class CreateSchool
 
             return $school;
         });
+    }
+
+    /** A typical Saudi day: seven 45-minute lessons with a break after the third. */
+    private function seedPeriods(): void
+    {
+        foreach ([
+            ['الحصة الأولى', 'Period 1', '07:00', '07:45', false],
+            ['الحصة الثانية', 'Period 2', '07:45', '08:30', false],
+            ['الحصة الثالثة', 'Period 3', '08:30', '09:15', false],
+            ['الفسحة', 'Break', '09:15', '09:40', true],
+            ['الحصة الرابعة', 'Period 4', '09:40', '10:25', false],
+            ['الحصة الخامسة', 'Period 5', '10:25', '11:10', false],
+            ['الحصة السادسة', 'Period 6', '11:10', '11:55', false],
+            ['الحصة السابعة', 'Period 7', '11:55', '12:40', false],
+        ] as $index => [$ar, $en, $start, $end, $break]) {
+            Period::query()->create([
+                'sequence' => $index + 1,
+                'name_ar' => $ar,
+                'name_en' => $en,
+                'starts_at' => $start,
+                'ends_at' => $end,
+                'is_break' => $break,
+            ]);
+        }
     }
 
     private function seedAttendanceCodes(): void

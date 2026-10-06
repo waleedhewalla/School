@@ -39,12 +39,14 @@ Slice 2 ✅
 - [x] Excel import in Noor's column layout: preview with per-row errors, then confirm; Hijri birth dates, Arabic name splitting, siblings linked by guardian ID/mobile, missing sections created
 - [x] SMS to guardians on new absence/late (Unifonic or Taqnyat driver, log driver for development), gender-aware Arabic wording, every message logged
 
-Slice 3 — next
-- [ ] Timetable: periods, builder, clash detection
-- [ ] WhatsApp and email channels; notification settings per school (which codes alert, quiet hours)
-- [ ] Verify Noor column aliases against real exports from pilot schools
+Slice 3 ✅
+- [x] Bell schedule per school (periods, breaks, school days — Sunday–Thursday by default)
+- [x] Section timetables: grid editor, teacher and room double-booking refused, reassigning a teacher moves their lessons only if they're free
+- [x] Teacher's week and "my lessons today" on the dashboard, each linking to that period's register
+- [x] WhatsApp (Meta Cloud API template) and email alerts alongside SMS; per-school channels, alerting statuses and quiet hours
+- [ ] Verify Noor column aliases against real exports from pilot schools (needs a real file)
 
-Slice 4
+Slice 4 — next
 - [ ] Assessments: **grading scales** (validated intervals), **exam rules**, weighted **assessment components**, marks entry window, calculated vs final mark — Frappe, Unifiedtransform, ICTSchool
 - [ ] Arabic report cards (PDF)
 - [ ] Announcements; attendance and grade dashboards

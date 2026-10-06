@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\Timetable\AssignTeacher;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\V1\TeachingAssignmentResource;
 use App\Models\Section;
@@ -27,7 +28,7 @@ class TeachingAssignmentController extends Controller
     }
 
     /** Assign (or reassign) the teacher of a subject in a section. */
-    public function store(Request $request): TeachingAssignmentResource
+    public function store(Request $request, AssignTeacher $assign): TeachingAssignmentResource
     {
         $data = $request->validate([
             'section_id' => ['required', 'integer', ExistsInCurrentSchool::in('sections')],
@@ -36,15 +37,11 @@ class TeachingAssignmentController extends Controller
             'is_homeroom' => ['sometimes', 'boolean'],
         ]);
 
-        $section = Section::query()->findOrFail($data['section_id']);
-
-        $assignment = TeachingAssignment::query()->updateOrCreate(
-            ['section_id' => $section->id, 'subject_id' => $data['subject_id']],
-            [
-                'academic_year_id' => $section->academic_year_id,
-                'staff_member_id' => $data['staff_member_id'],
-                'is_homeroom' => $data['is_homeroom'] ?? false,
-            ],
+        $assignment = $assign->handle(
+            Section::query()->findOrFail($data['section_id']),
+            (int) $data['subject_id'],
+            (int) $data['staff_member_id'],
+            (bool) ($data['is_homeroom'] ?? false),
         );
 
         return new TeachingAssignmentResource($assignment->load('subject', 'staffMember'));

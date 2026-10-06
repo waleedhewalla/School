@@ -6,9 +6,11 @@ use App\Actions\Attendance\RecordAttendance;
 use App\Actions\Schools\AddSchoolMember;
 use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
+use App\Actions\Timetable\PlaceLesson;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
 use App\Models\GradeLevel;
+use App\Models\Period;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Student;
@@ -101,13 +103,34 @@ class DatabaseSeeder extends Seeder
             ->firstOrFail();
 
         $staff = StaffMember::query()->create(['employee_number' => 'T-001', 'name_ar' => 'معلم تجريبي', 'name_en' => 'Demo Teacher', 'user_id' => $teacher->id]);
-        TeachingAssignment::query()->create([
+        $math = TeachingAssignment::query()->create([
             'academic_year_id' => $year->id,
             'section_id' => $section->id,
             'subject_id' => Subject::query()->where('code', 'MATH')->value('id'),
             'staff_member_id' => $staff->id,
             'is_homeroom' => true,
         ]);
+
+        // A second teacher for Arabic and Quran, and a partly filled week for the section.
+        $arabicTeacher = StaffMember::query()->create(['employee_number' => 'T-002', 'name_ar' => 'أ. سعد الحربي', 'name_en' => 'Saad Al-Harbi']);
+        $subjects = ['ARB' => $arabicTeacher, 'QURAN' => $arabicTeacher, 'SCI' => $staff];
+        $assignments = ['MATH' => $math];
+        foreach ($subjects as $code => $teacherStaff) {
+            $assignments[$code] = TeachingAssignment::query()->create([
+                'academic_year_id' => $year->id,
+                'section_id' => $section->id,
+                'subject_id' => Subject::query()->where('code', $code)->value('id'),
+                'staff_member_id' => $teacherStaff->id,
+            ]);
+        }
+
+        $lessons = Period::query()->lessons()->get();
+        $week = [['QURAN', 'ARB', 'MATH', 'SCI'], ['ARB', 'MATH', 'QURAN', 'ARB'], ['MATH', 'ARB', 'SCI', 'QURAN'], ['ARB', 'QURAN', 'MATH', 'SCI'], ['MATH', 'SCI', 'ARB', 'QURAN']];
+        foreach ($week as $day => $codes) {
+            foreach ($codes as $index => $code) {
+                app(PlaceLesson::class)->handle($section, $day, $lessons[$index], $assignments[$code], $code === 'SCI' ? 'مختبر 1' : null);
+            }
+        }
 
         $names = [
             ['عبدالله', 'محمد', 'الشهري', 'male'], ['فيصل', 'سعد', 'القحطاني', 'male'], ['ريم', 'خالد', 'العتيبي', 'female'],

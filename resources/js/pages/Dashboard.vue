@@ -3,7 +3,7 @@ import { Link } from '@inertiajs/vue3';
 import AppLayout from '../layouts/AppLayout.vue';
 import { useT } from '../lib/i18n';
 
-defineProps({ today: String, year: Object, stats: Object });
+defineProps({ today: String, year: Object, stats: Object, lessonsToday: Array });
 const t = useT();
 </script>
 
@@ -12,6 +12,18 @@ const t = useT();
         <p class="mb-6 text-muted">
             {{ today }}<template v-if="year"> · {{ t('Academic year') }} {{ year.name }}</template>
         </p>
+
+        <section v-if="lessonsToday.length" class="card mb-6">
+            <h2 class="mb-3 font-semibold">{{ t('My lessons today') }}</h2>
+            <ul class="divide-y divide-line text-sm">
+                <li v-for="l in lessonsToday" :key="l.period_sequence" class="flex flex-wrap items-center gap-3 py-2">
+                    <span class="w-28 font-medium">{{ l.period }}</span>
+                    <span class="w-24 text-muted tabular-nums" dir="ltr">{{ l.time }}</span>
+                    <span class="flex-1">{{ l.subject }} — {{ l.section }}<span v-if="l.room" class="text-muted"> · {{ l.room }}</span></span>
+                    <Link :href="`/attendance?section_id=${l.section_id}&period=${l.period_sequence}`" class="btn-ghost py-1">{{ t('Take attendance') }}</Link>
+                </li>
+            </ul>
+        </section>
 
         <div class="grid grid-cols-2 gap-4 md:grid-cols-5">
             <div class="card">

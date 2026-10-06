@@ -14,11 +14,16 @@ const nav = computed(() => [
     { href: '/dashboard', label: t('Dashboard'), show: can.value['students.view'] || can.value['attendance.record'] },
     { href: '/students', label: t('Students'), show: can.value['students.view'] },
     { href: '/attendance', label: t('Attendance'), show: can.value['attendance.record'] || can.value['attendance.view'] || can.value['attendance.manage'] },
+    // Teachers get their own week; managers and office staff see section timetables.
+    { href: '/timetable', label: t('Timetable'), show: can.value['timetable.manage'] || (can.value['academic-structure.view'] && !can.value['attendance.record']) },
+    { href: '/my/timetable', label: t('My timetable'), show: can.value['attendance.record'] && !can.value['timetable.manage'] },
     { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
+    { href: can.value['timetable.manage'] ? '/settings/periods' : '/settings/notifications', label: t('Settings'), show: can.value['timetable.manage'] || can.value['school.manage'] },
     { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
 ].filter((item) => item.show));
 
-const isActive = (href) => page.url === href || page.url.startsWith(`${href}?`) || page.url.startsWith(`${href}/`);
+const isActive = (href) => page.url === href || page.url.startsWith(`${href}?`) || page.url.startsWith(`${href}/`)
+    || (href.startsWith('/settings') && page.url.startsWith('/settings'));
 </script>
 
 <template>

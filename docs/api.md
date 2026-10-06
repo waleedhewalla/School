@@ -59,6 +59,10 @@ language; `name_ar` / `name_en` are also returned where editable.
 | GET | `/attendance-codes` | member |
 | GET, PUT | `/sections/{id}/attendance?date=&period=` — register (period 0 = daily) | `attendance.manage`, or `attendance.record` for sections you teach |
 | GET | `/my/children`, `/my/children/{id}/attendance` | guardian (own children only) |
+| GET | `/periods`; PUT `/periods` (`periods[]`: replaces the bell schedule) | member / `timetable.manage` |
+| GET | `/sections/{id}/timetable` — days × periods grid | `academic-structure.view` |
+| PUT, DELETE | `/sections/{id}/timetable` (`day`, `period_id`, `teaching_assignment_id`, `room`) | `timetable.manage` |
+| GET | `/my/timetable` — the signed-in teacher's week | staff linked to the user |
 
 Academic years also return `starts_on_hijri` / `ends_on_hijri`. Saving a register
 again corrects it; guardian alerts fire only for records whose code changed to
