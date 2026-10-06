@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>غير متصل · مدرسة</title>
+    <style>
+        :root { --surface: #f6f7f5; --card: #fff; --ink: #1c2326; --muted: #5d676b; --accent: #0f6e56; }
+        @media (prefers-color-scheme: dark) { :root { --surface: #131719; --card: #1b2124; --ink: #edf1ef; --muted: #a1abaf; --accent: #4cc39f; } }
+        body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--surface); color: var(--ink); font-family: system-ui, Tahoma, sans-serif; }
+        main { background: var(--card); padding: 2rem; border-radius: 12px; max-width: 22rem; margin: 1rem; text-align: center; }
+        h1 { color: var(--accent); font-size: 1.25rem; }
+        p { color: var(--muted); line-height: 1.7; }
+        button { background: var(--accent); color: #fff; border: 0; border-radius: 8px; padding: .6rem 1.2rem; font: inherit; cursor: pointer; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>لا يوجد اتصال بالإنترنت</h1>
+    <p>تحقق من الاتصال ثم أعد المحاولة.</p>
+    <p lang="en" dir="ltr">You are offline. Check your connection and try again.</p>
+    <button type="button" onclick="location.reload()">إعادة المحاولة · Retry</button>
+</main>
+</body>
+</html>

@@ -6,7 +6,7 @@ import FieldError from '../../components/FieldError.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import { formatDate, ltr, useT } from '../../lib/i18n';
 
-const props = defineProps({ application: Object, documents: Array, events: Array, duplicates: Array, sections: Array });
+const props = defineProps({ application: Object, documents: Array, events: Array, duplicates: Array, sections: Array, family: Object });
 const t = useT();
 const a = computed(() => props.application);
 
@@ -141,6 +141,10 @@ const missingDocs = computed(() => props.documents.filter((d) => d.status !== 'a
 
                 <section v-if="a.status === 'accepted'" class="card">
                     <h2 class="mb-3 font-semibold">{{ t('Enrol the student') }}</h2>
+                    <p class="mb-3 text-sm" :class="family ? 'text-accent' : 'text-muted'">
+                        <template v-if="family">{{ t('Joins the family of :guardian (:children).', { guardian: family.guardian, children: family.children.join('، ') }) }}</template>
+                        <template v-else>{{ t('A new family and guardian record will be created.') }}</template>
+                    </p>
                     <form class="space-y-3" @submit.prevent="submitEnrol">
                         <select v-model="enrol.section_id" class="input" :aria-label="t('Section')">
                             <option value="">{{ t('Assign later') }}</option>

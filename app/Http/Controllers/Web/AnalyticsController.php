@@ -59,14 +59,20 @@ class AnalyticsController extends Controller
             ?? $terms->last();
         [$subjectAverages, $failing] = $term ? $this->termResults($year, $term) : [collect(), collect()];
 
-        $atRisk = $enrollments->map(function (Enrollment $e) use ($attendance, $behaviour, $failing) {
+        $seeGrades = $user->can(Permission::GradesView);
+        $seeBehaviour = $user->can(Permission::BehaviourManage);
+        if (! $seeGrades) {
+            [$subjectAverages, $failing] = [collect(), collect()];
+        }
+
+        $atRisk = $enrollments->map(function (Enrollment $e) use ($attendance, $behaviour, $failing, $seeBehaviour) {
             $reasons = [];
             $a = $attendance[$e->student_id];
             $rate = AttendanceSummary::rate($a);
             if ($rate !== null && $a['recorded'] >= 5 && $rate < self::ATTENDANCE_FLAG) {
                 $reasons[] = ['kind' => 'attendance', 'value' => $rate];
             }
-            if (($score = $behaviour[$e->student_id]['score']) < self::BEHAVIOUR_FLAG) {
+            if ($seeBehaviour && ($score = $behaviour[$e->student_id]['score']) < self::BEHAVIOUR_FLAG) {
                 $reasons[] = ['kind' => 'behaviour', 'value' => $score];
             }
             if (($count = $failing->get($e->student_id, 0)) >= 1) {
@@ -88,7 +94,7 @@ class AnalyticsController extends Controller
                 'students' => $enrollments->count(),
                 'boys' => $enrollments->filter(fn (Enrollment $e) => $e->student->gender->value === 'male')->count(),
                 'attendance' => $rates->isNotEmpty() ? round($rates->avg(), 1) : null,
-                'behaviour' => $behaviour->isNotEmpty() ? round($behaviour->avg('score'), 1) : null,
+                'behaviour' => $seeBehaviour && $behaviour->isNotEmpty() ? round($behaviour->avg('score'), 1) : null,
                 'at_risk' => $atRisk->count(),
             ],
             'byGrade' => $enrollments->groupBy('grade_level_id')
@@ -99,6 +105,7 @@ class AnalyticsController extends Controller
             'terms' => $terms->map(fn (Term $t) => ['id' => $t->id, 'name' => $t->name]),
             'termId' => $term?->id,
             'subjects' => $subjectAverages,
+            'seeGrades' => $seeGrades,
             'atRisk' => $atRisk->take(50),
             'admissions' => Application::query()->whereHas('window', fn ($q) => $q->where('academic_year_id', '>=', $year->id))
                 ->toBase()->selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),

@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\EnrollmentController;
 use App\Http\Controllers\Api\V1\GradeLevelController;
 use App\Http\Controllers\Api\V1\GuardianController;
 use App\Http\Controllers\Api\V1\MeController;
+use App\Http\Controllers\Api\V1\Portal\FamilyController;
 use App\Http\Controllers\Api\V1\Portal\MyChildrenController;
 use App\Http\Controllers\Api\V1\SchoolController;
 use App\Http\Controllers\Api\V1\SectionController;
@@ -95,6 +96,13 @@ Route::prefix('v1')->name('api.v1.')->middleware('locale')->group(function () {
             // Guardian portal.
             Route::get('my/children', [MyChildrenController::class, 'index'])->name('my.children.index');
             Route::get('my/children/{student}/attendance', [MyChildrenController::class, 'attendance'])->name('my.children.attendance');
+            Route::get('my/children/{student}/homework', [FamilyController::class, 'homework'])->whereNumber('student')->name('my.children.homework');
+            Route::get('my/children/{student}/behaviour', [FamilyController::class, 'behaviour'])->whereNumber('student')->name('my.children.behaviour');
+            Route::get('my/children/{student}/results', [FamilyController::class, 'results'])->whereNumber('student')->name('my.children.results');
+            Route::get('my/children/{student}/transport', [FamilyController::class, 'transport'])->whereNumber('student')->name('my.children.transport');
+            Route::get('my/announcements', [FamilyController::class, 'announcements'])->name('my.announcements');
+            Route::get('my/excuses', [FamilyController::class, 'excuses'])->name('my.excuses.index');
+            Route::post('my/excuses', [FamilyController::class, 'storeExcuse'])->middleware('throttle:10,1')->name('my.excuses.store');
         });
     });
 });

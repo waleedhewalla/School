@@ -67,3 +67,25 @@ language; `name_ar` / `name_en` are also returned where editable.
 Academic years also return `starts_on_hijri` / `ends_on_hijri`. Saving a register
 again corrects it; guardian alerts fire only for records whose code changed to
 one marked `notify_guardian` (absent, late by default).
+
+
+## Family endpoints (mobile app)
+
+For a guardian's linked children, or a student's own record. Anything else
+answers 404.
+
+| Method | Path | Returns |
+|---|---|---|
+| GET | `/my/children` | children with current class |
+| GET | `/my/children/{id}/attendance?from&to` | attendance marks |
+| GET | `/my/children/{id}/homework` | homework from 14 days back, by due date |
+| GET | `/my/children/{id}/behaviour` | behaviour score and records this year |
+| GET | `/my/children/{id}/results` | published term results with report-card link |
+| GET | `/my/children/{id}/transport` | route, bus, stop, pick-up / drop-off times |
+| GET | `/my/announcements` | announcements for the family |
+| GET | `/my/excuses` | absence excuses and their status |
+| POST | `/my/excuses` | `student_id`, `from_date`, `to_date`, `reason` → 201 (10 per minute) |
+| GET | `/my/timetable` | a teacher's week |
+
+The web app is also installable on phones (manifest + service worker); the
+service worker caches only static files, never signed-in pages.

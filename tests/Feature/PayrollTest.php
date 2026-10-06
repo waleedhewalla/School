@@ -50,8 +50,13 @@ class PayrollTest extends TestCase
         $this->actingAs($d['teacher'])->get('/my/payslips')->assertInertia(fn (Assert $page) => $page->has('payslips', 0));
         $this->get('/payroll')->assertForbidden();
 
+        // Four eyes: whoever prepared the month cannot approve it.
         $this->actingAs($accountant);
+        $this->post("/payroll/runs/{$run->id}/approve")->assertSessionHasErrors('run');
+        $this->put("/payroll/contracts/{$d['staff']->id}", ['is_saudi' => true, 'basic_salary' => 1, 'gosi_registered' => true])->assertSessionHasNoErrors();
+        $this->actingAs($this->memberOf($school, SchoolRole::SchoolAdmin));
         $this->post("/payroll/runs/{$run->id}/approve")->assertSessionHasNoErrors();
+        $this->actingAs($accountant);
         $this->patch("/payroll/lines/{$saudi->id}", ['additions' => 0, 'deductions' => 0])->assertSessionHasErrors('additions');
         $this->get("/payroll/runs/{$run->id}/export")->assertOk()->assertDownload('payroll-2026-09.xlsx');
 
@@ -62,5 +67,15 @@ class PayrollTest extends TestCase
     {
         $school = $this->createSchool();
         $this->actingAs($this->memberOf($school, SchoolRole::Principal))->get('/payroll')->assertForbidden();
+    }
+
+    public function test_nobody_edits_their_own_pay(): void
+    {
+        $school = $this->createSchool();
+        $accountant = $this->memberOf($school, SchoolRole::Accountant);
+        $me = $this->inSchool($school, fn () => StaffMember::query()->create(['employee_number' => 'A1', 'name_ar' => 'محاسب', 'user_id' => $accountant->id]));
+
+        $this->actingAs($accountant)->put("/payroll/contracts/{$me->id}", ['is_saudi' => true, 'basic_salary' => 99000, 'gosi_registered' => true])
+            ->assertSessionHasErrors('basic_salary');
     }
 }

@@ -55,6 +55,10 @@ class ExamsAndAnalyticsTest extends TestCase
 
         $this->actingAs($d['teacher'])->get('/analytics')->assertForbidden();
         $this->actingAs($this->memberOf($school, SchoolRole::Principal))->get('/analytics')
-            ->assertInertia(fn (Assert $page) => $page->component('Analytics/Index')->where('tiles.students', 2)->has('weekly', 1)->has('subjects'));
+            ->assertInertia(fn (Assert $page) => $page->component('Analytics/Index')->where('tiles.students', 2)->has('weekly', 1)->where('seeGrades', true));
+
+        // A registrar sees attendance and enrolment, not grades or behaviour.
+        $this->actingAs($this->memberOf($school, SchoolRole::Registrar))->get('/analytics')
+            ->assertInertia(fn (Assert $page) => $page->where('seeGrades', false)->has('subjects', 0)->where('tiles.behaviour', null));
     }
 }

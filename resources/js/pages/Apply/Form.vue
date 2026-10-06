@@ -5,7 +5,7 @@ import PublicLayout from '../../layouts/PublicLayout.vue';
 import FieldError from '../../components/FieldError.vue';
 import { formatDate, useT } from '../../lib/i18n';
 
-const props = defineProps({ schoolName: String, windows: Array, relationships: Array });
+const props = defineProps({ schoolName: String, windows: Array, relationships: Array, started: String });
 const t = useT();
 
 const form = useForm({
@@ -15,6 +15,8 @@ const form = useForm({
     current_school: '', from_private_school: false,
     guardian_name: '', guardian_national_id: '', guardian_phone: '', guardian_email: '', guardian_relationship: 'father',
     consent: false,
+    started: props.started,
+    website: '',
 });
 
 const selected = computed(() => props.windows.find((w) => w.id === Number(form.admission_window_id)));
@@ -138,6 +140,9 @@ const submit = () => {
                 </div>
                 <p class="mt-3 text-sm text-muted">{{ t('If a brother or sister already studies here, use the same mobile or ID so the application gets sibling priority.') }}</p>
             </section>
+
+            <!-- Left empty by people; bots fill it. -->
+            <div class="hidden" aria-hidden="true"><label>Website <input v-model="form.website" tabindex="-1" autocomplete="off"></label></div>
 
             <section class="card">
                 <label class="flex items-start gap-3 text-sm">

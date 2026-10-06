@@ -8,20 +8,22 @@ Arabic first (RTL), Hijri and Gregorian dates, built for Noor, ZATCA and PDPL.
 
 ## Status
 
-Phase 0 done, Phase 1 in progress — see [docs/roadmap.md](docs/roadmap.md).
+All planned phases are built except fees and ZATCA e-invoicing, which are
+deferred on purpose. See [docs/roadmap.md](docs/roadmap.md) for the full list
+and what is still open.
 
-- Multi-school tenancy with isolation enforced in code and tests
-- Roles per school (admin, principal, registrar, teacher, accountant, guardian, student)
-- Academic structure: years, terms, Saudi stages and grade levels, sections, subjects
-- Arabic / English with RTL, Umm al-Qura Hijri dates
-- Students, guardians, families, enrollment and promotion, staff and teaching assignments
-- Admission forms, Excel import in Noor's layout, year-end promotion
-- Bell schedule and timetables with clash checks; teacher's week and today's lessons
-- Assessments, marks entry, results and Arabic report cards (print / PDF) with attendance and remarks
-- Announcements to staff and guardians (optionally by SMS); attendance dashboard
-- Invitations by email, password reset, two-factor sign-in
-- Daily and per-period attendance; guardian alerts by SMS (Unifonic / Taqnyat), WhatsApp and email; guardian portal
-- Web app (Inertia + Vue) and REST API v1 ([docs/api.md](docs/api.md))
+- **School and SaaS:** multi-school tenancy with isolation tested for every school-owned model;
+  platform console; school setup screens; roles per school (admin, principal, registrar, teacher,
+  counsellor, nurse, librarian, accountant, guardian, student)
+- **Students:** students, guardians and families, Noor-layout Excel import and export, enrolment,
+  promotion, admissions with a public Arabic-first form
+- **School day:** attendance with guardian SMS / WhatsApp / email, timetables, homework,
+  behaviour, absence excuses, staff leave
+- **Grades:** assessments, marks, results, Arabic report cards, online quizzes, Nafes / Qiyas results
+- **Services:** clinic and health cards, library, transport, inventory
+- **Staff:** records, teaching assignments, payroll with GOSI and a register for Mudad
+- **Insight:** dashboard, analytics, students to follow up
+- **Delivery:** web app (Inertia + Vue, installable on phones), REST API v1, Docker production stack
 
 ## Run locally
 
@@ -39,12 +41,18 @@ php artisan serve
 
 Open http://localhost:8000/login. Demo accounts: `admin@example.com` (school
 admin), `teacher@example.com` (teacher of grade 1 / أ), `parent@example.com`
-(guardian of two siblings), `platform@example.com` (platform admin).
+(guardian of two siblings), `student@example.com` (a grade 1 student with a quiz),
+`platform@example.com` (platform admin).
 
 ```bash
 php artisan test        # test suite
 ./vendor/bin/pint       # code style
 ```
+
+## Production
+
+`compose.production.yml` runs the app, queue worker, scheduler, PostgreSQL, Redis and nightly
+backups — see [docs/deployment.md](docs/deployment.md).
 
 ## Docs
 

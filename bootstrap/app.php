@@ -26,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->web(append: [SetLocale::class, HandleInertiaRequests::class]);
 
+        // Behind a load balancer / TLS proxy: TRUSTED_PROXIES="*" or a list of IPs.
+        if ($proxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : explode(',', $proxies));
+        }
+
         // Order: auth → locale → school → route model binding. The school must
         // be known before binding so bound models are filtered to it.
         $middleware->prependToPriorityList(

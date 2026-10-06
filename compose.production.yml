@@ -1,0 +1,95 @@
+# Production stack: web, queue worker, scheduler, PostgreSQL, Redis,
+# Gotenberg (PDF) and nightly backups. Put a TLS proxy or load balancer in
+# front of port 8080 (or set SERVER_NAME to your domain and publish 80/443
+# so the built-in Caddy gets certificates). See docs/deployment.md.
+#
+#   cp .env.production.example .env.production   # fill it in
+#   docker compose -f compose.production.yml --env-file .env.production up -d --build
+
+x-app: &app
+  build: .
+  image: madrasa:latest
+  restart: unless-stopped
+  env_file: .env.production
+  environment:
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    REDIS_HOST: redis
+    CACHE_STORE: redis
+    QUEUE_CONNECTION: redis
+    SESSION_DRIVER: redis
+    GOTENBERG_URL: http://gotenberg:3000
+  volumes:
+    - storage:/app/storage/app
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
+
+services:
+  app:
+    <<: *app
+    command: web
+    ports: ["8080:80"]
+
+  worker:
+    <<: *app
+    command: worker
+    healthcheck: { disable: true }
+
+  scheduler:
+    <<: *app
+    command: scheduler
+    healthcheck: { disable: true }
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-madrasa}
+      POSTGRES_USER: ${DB_USERNAME:-madrasa}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env.production}
+    volumes: ['pgdata:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7
+    restart: unless-stopped
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes: ['redisdata:/data']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      retries: 20
+
+  # Report-card PDFs (optional): start with `--profile pdf` and set PDF_DRIVER=gotenberg.
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    restart: unless-stopped
+    profiles: ['pdf']
+
+  # Nightly database dump and copy of uploaded files, kept for 14 days.
+  backup:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      PGHOST: postgres
+      PGDATABASE: ${DB_DATABASE:-madrasa}
+      PGUSER: ${DB_USERNAME:-madrasa}
+      PGPASSWORD: ${DB_PASSWORD}
+      KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - backups:/backups
+      - storage:/files:ro
+      - ./deploy/backup.sh:/backup.sh:ro
+    entrypoint: ['sh', '-c', 'while true; do sh /backup.sh; sleep 86400; done']
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:
+  redisdata:
+  storage:
+  backups:

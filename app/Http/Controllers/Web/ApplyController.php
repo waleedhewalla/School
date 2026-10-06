@@ -28,6 +28,10 @@ use Inertia\Response;
  */
 class ApplyController extends Controller
 {
+    public const MIN_SECONDS = 5;
+
+    public const PER_PHONE_PER_DAY = 3;
+
     public function create(CurrentSchool $currentSchool): Response
     {
         return Inertia::render('Apply/Form', [
@@ -44,6 +48,8 @@ class ApplyController extends Controller
                     'full' => $w->seatsLeft() === 0,
                 ]),
             'relationships' => array_column(GuardianRelationship::cases(), 'value'),
+            // When the form was opened: very fast submissions are bots.
+            'started' => encrypt(now()->getTimestamp()),
         ]);
     }
 
@@ -64,8 +70,9 @@ class ApplyController extends Controller
             'from_private_school' => ['boolean'],
             'guardian_name' => ['required', 'string', 'max:150'],
             'guardian_national_id' => ['nullable', new SaudiNationalId],
+            // Saudi mobiles only: the school texts this number.
             'guardian_phone' => ['required', 'string', function ($attribute, $value, $fail) {
-                if (PhoneNumber::normalize($value) === null) {
+                if (! preg_match('/^9665\d{8}$/', (string) PhoneNumber::normalize($value))) {
                     $fail(__('admissions.bad_phone'));
                 }
             }],
@@ -73,6 +80,7 @@ class ApplyController extends Controller
             'guardian_relationship' => ['required', Rule::enum(GuardianRelationship::class)],
             'consent' => ['accepted'],
         ]);
+        $this->guardAgainstAbuse($request, $data['guardian_phone']);
 
         // Only windows open today; anything else reads as "not found".
         $window = AdmissionWindow::query()->openToday()->find($data['admission_window_id']);
@@ -159,6 +167,29 @@ class ApplyController extends Controller
         $change->handle($application, $data['action'] === 'accept' ? ApplicationStatus::Accepted : ApplicationStatus::Withdrawn, note: __('admissions.by_family'));
 
         return back()->with('success', __($data['action'] === 'accept' ? 'admissions.offer_accepted' : 'admissions.withdrawn'));
+    }
+
+    /**
+     * Light bot and cost protection for the public form: a hidden field
+     * people leave empty, a minimum time to fill the form, and daily caps
+     * per mobile and per school (each application sends an SMS).
+     */
+    private function guardAgainstAbuse(Request $request, string $phone): void
+    {
+        $started = null;
+        try {
+            $started = (int) decrypt((string) $request->input('started'));
+        } catch (\Throwable) {
+        }
+        if (filled($request->input('website')) || $started === null || now()->getTimestamp() - $started < self::MIN_SECONDS) {
+            throw ValidationException::withMessages(['consent' => __('admissions.try_again')]);
+        }
+
+        $today = Application::query()->where('submitted_at', '>=', now()->startOfDay());
+        if ((clone $today)->where('guardian_phone', PhoneNumber::normalize($phone))->count() >= self::PER_PHONE_PER_DAY
+            || (clone $today)->count() >= (int) config('madrasa.admissions_daily_cap', 300)) {
+            throw ValidationException::withMessages(['guardian_phone' => __('admissions.daily_limit')]);
+        }
     }
 
     private function find(string $token): Application

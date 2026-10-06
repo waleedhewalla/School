@@ -872,5 +872,7 @@
     "exam_type.nafes": "نافس",
     "exam_type.tahsili": "التحصيلي",
     "exam_type.qudrat": "القدرات",
-    "exam_type.other": "أخرى"
+    "exam_type.other": "أخرى",
+    "A new family and guardian record will be created.": "سيُنشأ سجل أسرة وولي أمر جديد.",
+    "Joins the family of :guardian (:children).": "سيُضم إلى أسرة :guardian (:children)."
 }

@@ -8,6 +8,7 @@ use App\Mail\InvitationMail;
 use App\Models\Guardian;
 use App\Models\Invitation;
 use App\Models\Student;
+use App\Models\User;
 use App\Support\Tenancy\CurrentSchool;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,9 +57,20 @@ class PortalInviteController extends Controller
         }
 
         $school = $currentSchool->get();
+
+        // A family's portal must not be handed to a staff login (which would
+        // then see that child's health card, behaviour and results).
+        $staffRoles = array_map(fn (SchoolRole $r) => $r->value, array_filter(SchoolRole::cases(), fn (SchoolRole $r) => ! in_array($r, [SchoolRole::Guardian, SchoolRole::Student], true)));
+        $isStaff = User::query()->where('email', $data['email'])
+            ->whereHas('roles', fn ($q) => $q->where('roles.school_id', $school->id)->whereIn('roles.name', $staffRoles))->exists();
+        if ($isStaff) {
+            throw ValidationException::withMessages(['email' => __('portal.staff_email')]);
+        }
+
         Invitation::query()->where($link)->whereNull('accepted_at')->delete();
         [$invitation, $token] = Invitation::issue(['email' => $data['email'], 'name' => $name, 'roles' => [$role->value], 'invited_by' => $request->user()->id] + $link);
         Mail::to($data['email'])->send(new InvitationMail($invitation, route('invitations.show', $token), $school->name_ar, $school->default_locale));
+        activity()->causedBy($request->user())->performedOn($invitation)->withProperties($link + ['email' => $data['email']])->log('portal invitation');
 
         return back()->with('success', __('Invitation sent.'));
     }

@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'relink_login' => 'نقل سجل الموظف إلى حساب دخول آخر متاح لمدير النظام فقط.',
     'accepted' => 'يجب قبول :attribute.',
     'after' => 'يجب أن يكون :attribute تاريخًا بعد :date.',
     'after_or_equal' => 'يجب أن يكون :attribute تاريخًا مساويًا لـ :date أو بعده.',

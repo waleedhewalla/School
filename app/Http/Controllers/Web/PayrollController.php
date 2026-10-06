@@ -56,6 +56,9 @@ class PayrollController extends Controller
             'bank' => ['nullable', 'string', 'max:100'],
             'iban' => ['nullable', 'string', 'regex:/^SA\d{22}$/'],
         ], ['iban.regex' => __('payroll.iban')]);
+        if ($staffMember->user_id !== null && (int) $staffMember->user_id === (int) $request->user()->id) {
+            throw ValidationException::withMessages(['basic_salary' => __('payroll.own_contract')]);
+        }
         foreach (['housing_allowance', 'transport_allowance', 'other_allowances'] as $key) {
             $data[$key] ??= 0;
         }
@@ -113,6 +116,9 @@ class PayrollController extends Controller
     {
         if (! $run->isDraft()) {
             throw ValidationException::withMessages(['run' => __('payroll.locked')]);
+        }
+        if ((int) $run->created_by === (int) $request->user()->id) {
+            throw ValidationException::withMessages(['run' => __('payroll.four_eyes')]);
         }
         if ($run->lines()->where('net', '<', 0)->exists()) {
             throw ValidationException::withMessages(['run' => __('payroll.negative_net')]);

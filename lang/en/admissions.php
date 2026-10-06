@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'try_again' => 'The application could not be sent; please check it and try again.',
+    'daily_limit' => 'Today\'s limit of applications for this mobile or this school has been reached; try tomorrow or contact the school.',
     'subject' => ':school: application :reference',
     'age_outside' => 'The date of birth is outside the age range accepted for this grade this year.',
     'duplicate_application' => 'There is already an open application this year for a child with this ID.',

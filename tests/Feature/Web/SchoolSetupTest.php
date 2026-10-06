@@ -148,4 +148,18 @@ class SchoolSetupTest extends TestCase
         $this->put("/setup/sections/{$foreign->id}", ['name' => 'x'])->assertNotFound();
         $this->delete("/setup/sections/{$foreign->id}")->assertNotFound();
     }
+
+    public function test_only_a_school_admin_moves_a_staff_record_to_another_login(): void
+    {
+        $school = $this->createSchool();
+        $d = $this->seedSchoolData($school);
+        $principal = $this->memberOf($school, SchoolRole::Principal);
+
+        // The principal tries to take over the teacher's record (and so their payslips).
+        $this->actingAs($principal)->put("/staff/{$d['staff']->id}", ['user_id' => $principal->id])->assertSessionHasErrors('user_id');
+        $this->put("/staff/{$d['staff']->id}", ['user_id' => null])->assertSessionHasErrors('user_id');
+        $this->put("/staff/{$d['staff']->id}", ['job_title' => 'معلم رياضيات'])->assertSessionHasNoErrors();
+
+        $this->actingAs($this->memberOf($school, SchoolRole::SchoolAdmin))->put("/staff/{$d['staff']->id}", ['user_id' => null])->assertSessionHasNoErrors();
+    }
 }

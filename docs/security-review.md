@@ -44,7 +44,9 @@ The public admission pages are the first routes open to anyone. What
 protects them:
 - The school comes from the URL slug, only for active schools; the
   application is found by the hash of a 40-character random token, inside
-  that school only. Wrong token or wrong school → 404.
+  that school only. Wrong token or wrong school → 404. The token is also
+  kept encrypted (so later messages can repeat the link); message logs
+  store "[link]" instead of the URL.
 - Throttles: 5 applications, 20 uploads and 10 accept/withdraw actions per
   minute per IP; 60 status-page views.
 - Uploads: PDF/JPG/PNG up to 5 MB, only the types the checklist asks for,
@@ -55,6 +57,27 @@ protects them:
   only (`admissions.manage`) and checked against the status map.
 - Not done yet: a CAPTCHA on the form (add one if bots appear) and
   malware scanning of uploads (needs a scanner in the hosting setup).
+
+## Second review — all modules (October 2026)
+
+An independent pass over every controller added in phases 2–3 (admissions,
+setup, platform, exports, homework, behaviour, requests, clinic, library,
+transport, inventory, quizzes, portal invitations, payroll, national tests,
+analytics). No high-severity issue and no cross-school leak. Fixed:
+
+| # | Finding | Fix |
+|---|---|---|
+| M1 | A staff manager could re-link a colleague's staff record to their own login and read the colleague's payslips and leave attachments | Moving a linked staff record to another login needs `school.manage` |
+| M2 | A portal invitation could be sent to a staff member's own email, handing them a family's health and behaviour pages | Invitations to staff logins are refused; every portal invitation is audit-logged |
+| L1 | The public admission form could be used to send SMS to any number | Saudi mobiles only, a hidden honeypot field, a minimum fill time, 3 applications per mobile and a per-school cap per day |
+| L2 | Typing another family's guardian ID alone joined that family (waitlist priority, portal) | Self-service matching needs the mobile, and the ID when both exist; staff see the family before enrolling |
+| L3 | Analytics showed grades and behaviour to roles without those permissions | Those parts are sent only with `grades.view` / `behaviour.manage` |
+| L4 | Behaviour messages could be repeated | One behaviour message per student per day; lower throttle |
+| L5 | Message logs kept the admission private link | Logged as "[link]" |
+| L6 | One accountant could edit their own pay and approve their own payroll | Own contract locked; the approver must differ from the preparer |
+| — | Teaching rights from past years; leave attachment of a removed staff record | Current year only; handled |
+
+Each fix has a regression test.
 
 Repeat this review before each major release and after any change to
 tenancy, roles or sign-in.

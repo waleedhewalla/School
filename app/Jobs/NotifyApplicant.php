@@ -95,7 +95,8 @@ class NotifyApplicant implements ShouldQueue
         }
 
         MessageLog::query()->create([
-            'channel' => $channel, 'purpose' => 'admission', 'to' => $to, 'body' => $body,
+            // The private link is a credential: the log keeps a placeholder.
+            'channel' => $channel, 'purpose' => 'admission', 'to' => $to, 'body' => preg_replace('~https?://\S+/status/\S+~', '[link]', $body),
             'status' => $status, 'error' => $error === null ? null : mb_substr($error, 0, 250),
         ]);
     }

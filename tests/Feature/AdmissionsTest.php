@@ -14,6 +14,7 @@ use App\Models\School;
 use App\Models\Student;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -41,7 +42,8 @@ class AdmissionsTest extends TestCase
 
     private function form(array $overrides = []): array
     {
-        return $this->applicationData($overrides) + ['admission_window_id' => $this->d['window']->id, 'consent' => true];
+        return $this->applicationData($overrides) + ['admission_window_id' => $this->d['window']->id, 'consent' => true,
+            'started' => encrypt(now()->subMinute()->getTimestamp())];
     }
 
     /** Submits through the public form and returns [application, token]. */
@@ -100,9 +102,8 @@ class AdmissionsTest extends TestCase
         $this->assertNotSame($token, $application->token_hash);
         $this->assertSame($token, $application->token);
 
-        $this->inSchool($this->school, function () use ($token) {
+        $this->inSchool($this->school, function () {
             $sms = MessageLog::query()->where('purpose', 'admission')->where('channel', 'sms')->sole();
-            $this->assertStringContainsString($token, $sms->body);
             $this->assertStringContainsString('1448-0002', $sms->body);
             $this->assertSame(1, MessageLog::query()->where('purpose', 'admission')->where('channel', 'email')->count());
         });
@@ -348,5 +349,44 @@ class AdmissionsTest extends TestCase
     {
         $this->expectException(ValidationException::class);
         $this->inSchool($this->school, fn () => app(ChangeApplicationStatus::class)->handle($this->d['application'], ApplicationStatus::Enrolled));
+    }
+
+    public function test_public_form_guards_against_bots_foreign_numbers_and_floods(): void
+    {
+        $this->withoutMiddleware(ThrottleRequests::class); // test the daily caps, not the per-IP throttle
+        $url = "/apply/{$this->school->slug}";
+        $this->post($url, ['website' => 'http://spam'] + $this->form())->assertSessionHasErrors('consent');
+        $this->post($url, ['started' => encrypt(now()->getTimestamp())] + $this->form())->assertSessionHasErrors('consent');
+        $this->post($url, ['started' => 'forged'] + $this->form())->assertSessionHasErrors('consent');
+        $this->post($url, $this->form(['guardian_phone' => '+447700900123']))->assertSessionHasErrors('guardian_phone');
+
+        foreach (range(1, 3) as $i) {
+            $this->post($url, $this->form(['first_name_ar' => "طفل{$i}"]))->assertSessionHasNoErrors();
+        }
+        $this->post($url, $this->form(['first_name_ar' => 'رابع']))->assertSessionHasErrors('guardian_phone');
+    }
+
+    public function test_one_matching_value_does_not_join_another_family(): void
+    {
+        $this->inSchool($this->school, fn () => $this->d['students'][0]->guardians()->first()
+            ->update(['phone' => '0551112222', 'national_id' => $this->saudiId(111)]));
+
+        // Someone else's ID with a different mobile: not a sibling.
+        [$stranger] = $this->apply(['guardian_national_id' => $this->saudiId(111), 'guardian_phone' => '0553334444']);
+        $this->assertFalse($stranger->has_sibling);
+
+        // Same mobile but a different ID: not a sibling either.
+        [$other] = $this->apply(['guardian_national_id' => $this->saudiId(222), 'guardian_phone' => '0551112222', 'first_name_ar' => 'هند']);
+        $this->assertFalse($other->has_sibling);
+    }
+
+    public function test_message_logs_do_not_keep_the_private_link(): void
+    {
+        [, $token] = $this->apply();
+        $this->inSchool($this->school, function () use ($token) {
+            $sms = MessageLog::query()->where('purpose', 'admission')->where('channel', 'sms')->sole();
+            $this->assertStringNotContainsString($token, $sms->body);
+            $this->assertStringContainsString('[link]', $sms->body);
+        });
     }
 }

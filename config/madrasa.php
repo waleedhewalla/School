@@ -22,4 +22,10 @@ return [
     */
     'school_header' => 'X-School',
 
+    /*
+    | Most public admission applications one school accepts per day (each
+    | sends an SMS), as a guard against abuse of the public form.
+    */
+    'admissions_daily_cap' => (int) env('MADRASA_ADMISSIONS_DAILY_CAP', 300),
+
 ];

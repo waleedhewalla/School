@@ -153,4 +153,14 @@ class QuizzesTest extends TestCase
         $this->assertSame($mother->id, $this->inSchool($this->school, fn () => $guardian->refresh()->user_id));
         $this->get('/my/children')->assertInertia(fn (Assert $page) => $page->where('children.0.id', $this->d['students'][1]->id));
     }
+
+    public function test_a_family_portal_cannot_be_sent_to_a_staff_login(): void
+    {
+        Mail::fake();
+        $guardian = $this->inSchool($this->school, fn () => $this->d['students'][1]->guardians()->first());
+        $registrar = $this->memberOf($this->school, SchoolRole::Registrar);
+
+        $this->actingAs($registrar)->post("/guardians/{$guardian->id}/invite", ['email' => $registrar->email])->assertSessionHasErrors('email');
+        Mail::assertNothingSent();
+    }
 }

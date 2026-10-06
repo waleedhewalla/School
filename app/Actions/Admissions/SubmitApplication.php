@@ -49,7 +49,7 @@ class SubmitApplication
             AcademicYear::query()->whereKey($window->academic_year_id)->lockForUpdate()->first();
             [$reference, $token] = Application::newIdentifiers($window->academicYear);
 
-            $guardian = GuardianMatcher::find($data['guardian_national_id'] ?? null, $data['guardian_phone']);
+            $guardian = GuardianMatcher::findStrict($data['guardian_national_id'] ?? null, $data['guardian_phone']);
             $hasSibling = $guardian !== null && $guardian->students()->exists();
 
             return [Application::query()->create([

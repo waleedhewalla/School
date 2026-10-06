@@ -161,7 +161,7 @@ class RequestsController extends Controller
 
     public function leaveAttachment(Request $request, LeaveRequest $leave): StreamedResponse
     {
-        $own = $leave->staffMember->user_id === $request->user()->id;
+        $own = (int) StaffMember::withTrashed()->whereKey($leave->staff_member_id)->value('user_id') === (int) $request->user()->id;
         abort_unless(($own || $request->user()->can(Permission::StaffManage)) && $leave->attachment_path, 404);
 
         return Storage::disk('local')->download($leave->attachment_path, $leave->attachment_name);

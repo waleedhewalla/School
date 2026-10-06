@@ -31,7 +31,8 @@ class Teaching
     public static function teachesSubject(User $user, int $sectionId, int $subjectId): bool
     {
         return TeachingAssignment::query()->where('section_id', $sectionId)->where('subject_id', $subjectId)
-            ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->getKey()))->exists();
+            ->whereHas('staffMember', fn ($q) => $q->where('user_id', $user->getKey()))
+            ->whereHas('section.academicYear', fn ($q) => $q->where('is_current', true))->exists();
     }
 
     /** Whether the user teaches the student's current section. */

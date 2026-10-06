@@ -7,7 +7,7 @@ import { formatDate, useT } from '../../lib/i18n';
 
 const props = defineProps({
     empty: Boolean, year: String, tiles: Object, byGrade: Array, weekly: Array, bySection: Array,
-    terms: Array, termId: Number, subjects: Array, atRisk: Array, admissions: [Object, Array], services: Object,
+    terms: Array, termId: Number, subjects: Array, seeGrades: Boolean, atRisk: Array, admissions: [Object, Array], services: Object,
 });
 const t = useT();
 const page = usePage();
@@ -42,7 +42,7 @@ const reasonText = (r) => ({
                     <div class="text-sm text-muted">{{ t('Attendance, last 30 days') }}</div>
                     <div class="text-3xl font-semibold tabular-nums">{{ pct(tiles.attendance) }}</div>
                 </div>
-                <div class="card">
+                <div v-if="tiles.behaviour !== null" class="card">
                     <div class="text-sm text-muted">{{ t('Average behaviour score') }}</div>
                     <div class="text-3xl font-semibold tabular-nums">{{ tiles.behaviour ?? '—' }}</div>
                 </div>
@@ -64,7 +64,7 @@ const reasonText = (r) => ({
                     <BarList v-if="sectionRows.length" :rows="sectionRows" :max="100" :label="t('Lowest attendance by section')" />
                     <p v-else class="text-sm text-muted">{{ t('No registers yet.') }}</p>
                 </section>
-                <section class="card">
+                <section v-if="seeGrades" class="card">
                     <div class="mb-3 flex flex-wrap items-center gap-2">
                         <h2 class="font-semibold">{{ t('Average by subject') }}</h2>
                         <select v-if="terms.length > 1" class="input ms-auto w-auto py-1" :value="termId" :aria-label="t('Term')" @change="router.get('/analytics', { term: $event.target.value }, { preserveScroll: true })">

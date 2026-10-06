@@ -83,9 +83,9 @@ class SchoolLifeTest extends TestCase
         $this->assertSame(100 - 1 - 10 + 3, $scores[$ahmad->id]['score']);
         $this->assertSame(99, $scores[$sara->id]['score']);
 
-        // Degree 4 and the competition award tell the guardian; degree 1 does not.
+        // Degree 4 tells the guardian; degree 1 does not; and only one behaviour text per child per day.
         $this->inSchool($this->school, function () {
-            $this->assertSame(2, MessageLog::query()->where('purpose', 'behaviour')->where('to', '966551112222')->count());
+            $this->assertSame(1, MessageLog::query()->where('purpose', 'behaviour')->where('to', '966551112222')->count());
         });
 
         // A teacher cannot record for a section they do not teach.

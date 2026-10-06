@@ -14,6 +14,7 @@ use App\Models\Section;
 use App\Models\Student;
 use App\Rules\ExistsInCurrentSchool;
 use App\Support\Admissions\DocumentChecklist;
+use App\Support\GuardianMatcher;
 use App\Support\Tenancy\CurrentSchool;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
@@ -114,6 +115,8 @@ class AdmissionsController extends Controller
                 'at' => $e->created_at->setTimezone($timezone)->format('Y-m-d H:i'),
             ]),
             'duplicates' => $this->duplicates($application),
+            'family' => ($g = GuardianMatcher::findStrict($application->guardian_national_id, $application->guardian_phone))
+                ? ['guardian' => $g->name_ar, 'children' => $g->students()->get()->map(fn (Student $s) => $s->name)->all()] : null,
             'sections' => Section::query()
                 ->where('academic_year_id', $window->academic_year_id)->where('grade_level_id', $window->grade_level_id)
                 ->orderBy('name')->get(['id', 'name', 'capacity']),

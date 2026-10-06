@@ -173,7 +173,7 @@ Route::middleware('auth')->group(function () {
 
         // Behaviour: teachers for students they teach, counsellors and managers for all.
         Route::get('/behaviour', [BehaviourController::class, 'index'])->name('behaviour.index');
-        Route::post('/behaviour', [BehaviourController::class, 'store'])->middleware('throttle:60,1')->name('behaviour.store');
+        Route::post('/behaviour', [BehaviourController::class, 'store'])->middleware('throttle:20,1')->name('behaviour.store');
         Route::delete('/behaviour/{incident}', [BehaviourController::class, 'destroy'])->name('behaviour.destroy');
         Route::middleware('can:'.Permission::BehaviourManage)->group(function () {
             Route::get('/behaviour/categories', [BehaviourController::class, 'categories'])->name('behaviour.categories');

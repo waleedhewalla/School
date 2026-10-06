@@ -88,4 +88,16 @@ class PlatformConsoleTest extends TestCase
         $this->post('/platform/schools', [])->assertForbidden();
         $this->patch("/platform/schools/{$school->id}", ['status' => 'suspended'])->assertForbidden();
     }
+
+    public function test_first_platform_admin_is_created_from_the_command_line(): void
+    {
+        $this->artisan('madrasa:create-platform-admin', ['email' => 'ops@example.sa'])
+            ->expectsQuestion('Password (at least 12 characters)', 'short')
+            ->assertFailed();
+        $this->artisan('madrasa:create-platform-admin', ['email' => 'ops@example.sa', '--name' => 'Ops'])
+            ->expectsQuestion('Password (at least 12 characters)', 'a-long-enough-pass')
+            ->assertSuccessful();
+
+        $this->assertTrue(User::query()->where('email', 'ops@example.sa')->sole()->is_platform_admin);
+    }
 }

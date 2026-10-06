@@ -36,6 +36,12 @@ class NotifyGuardianOfBehaviour implements ShouldQueue
             if ($incident === null || $incident->guardian_notified_at !== null) {
                 return;
             }
+            // At most one behaviour message per student per day.
+            $alreadyToday = BehaviourIncident::query()->where('student_id', $incident->student_id)->whereKeyNot($incident->id)
+                ->where('guardian_notified_at', '>=', now()->startOfDay())->exists();
+            if ($alreadyToday) {
+                return;
+            }
 
             $locale = $school->default_locale;
             $en = $locale === 'en';

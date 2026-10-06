@@ -184,3 +184,26 @@ the results page also offers a server-rendered PDF: the same Blade view with
 the print CSS and woff2 fonts inlined (`App\Support\Pdf\InlineAssets`) is
 sent to a Gotenberg container (headless Chromium), so Arabic shaping matches
 the browser.
+
+## Modules added in phase 3
+
+All follow the same rules: school-owned models use `BelongsToSchool` and are
+in the tenant-isolation test; foreign ids are validated with
+`ExistsInCurrentSchool`; routes sit in the `school` group behind a
+permission or an ownership check.
+
+| Area | Models | Who |
+|---|---|---|
+| Homework, quizzes | `Homework`, `Quiz`, `QuizQuestion`, `QuizAttempt` | `homework.assign` for own subjects (`Support\Teaching`); students by `students.user_id`; `Support\Quizzes\QuizGrader` |
+| Behaviour | `BehaviourCategory`, `BehaviourIncident`; `Support\BehaviourScore` | `behaviour.record` (own students) / `behaviour.manage` |
+| Requests | `AbsenceExcuse`, `LeaveRequest` (`Concerns\HasReview`) | guardians / staff ask; `attendance.manage` / `staff.manage` decide |
+| Clinic | `HealthRecord`, `ClinicVisit` | `clinic.manage`; families for their own child |
+| Library, transport, inventory | `LibraryBook`, `LibraryLoan`, `Bus`, `BusRoute`, `RouteStop`, `StudentTransport`, `InventoryItem` | `library.manage`, `transport.manage`, `inventory.manage` |
+| Payroll | `StaffContract`, `PayrollRun`, `PayrollLine`; `Support\Payroll\PayrollCalculator` | `payroll.manage`; staff see own approved payslips |
+| National tests | `ExternalExam`, `ExternalExamResult` | `grades.view` / `grades.manage` |
+
+Guardian notices go through `Jobs\NotifyStudentGuardians` (SMS / email,
+gender-aware Arabic, logged in `message_logs`). Dates are stored as plain
+`Y-m-d` (`Casts\DateOnly`) so range checks work the same on SQLite and
+PostgreSQL. New permissions reach existing schools through
+`ProvisionSchoolRoles::grantMissingDefaults()` in a migration.

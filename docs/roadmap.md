@@ -3,7 +3,7 @@
 Target: multi-school K-12 SaaS for Saudi Arabia / GCC, Arabic first.
 See [repo-analysis.md](repo-analysis.md) for where each idea comes from.
 
-## Phase 0 — Foundation ✅ (this branch)
+## Phase 0 — Foundation ✅
 
 - [x] Laravel 13 app, PHP 8.3, CI on GitHub Actions (SQLite + PostgreSQL)
 - [x] Multi-school tenancy: `schools`, `campuses` (boys / girls / mixed), `memberships`
@@ -19,10 +19,11 @@ See [repo-analysis.md](repo-analysis.md) for where each idea comes from.
 - [x] Web UI: Inertia + Vue 3, Tailwind 4 with RTL-safe logical utilities, self-hosted Arabic font
 - [x] Sign-in / sign-out, school picker for multi-school users
 - [x] Two-factor login, password reset, account invitations (slice 6)
-- [ ] Platform admin console; school setup wizard UI
-- [ ] OpenAPI docs generated in CI (Scribe)
+- [x] Platform admin console (`/platform`): every school with usage, onboard a school and invite its admin, suspend / reactivate, open a school for support; `madrasa:create-platform-admin` for the first operator
+- [x] School setup screens: academic years and terms, sections, subjects, staff, teaching assignments, school profile and campuses
+- [ ] OpenAPI docs generated in CI (Scribe) — the API is documented by hand in [api.md](api.md) for now
 
-## Phase 1 — Core SIS MVP (in progress)
+## Phase 1 — Core SIS MVP ✅
 
 Slice 1 ✅
 - [x] Students (Arabic four-part name, Saudi ID/iqama check digit, auto numbers), guardians, **families** (siblings) — ICTSchool
@@ -73,7 +74,7 @@ Next (Phase 1 wrap-up)
 - [x] Security review ([security-review.md](security-review.md)) — 4 medium and 7 low findings, all fixed with regression tests
 - [x] Load test with a 600-student school ([performance.md](performance.md)); production checklist in [deployment.md](deployment.md)
 
-## Phase 2 — Admissions (fees and ZATCA deferred)
+## Phase 2 — Admissions ✅ (fees and ZATCA deferred)
 
 Scope from [market-research.md](market-research.md):
 - [x] Intake windows per year and grade, with seat counts (`/admissions/windows`)
@@ -90,15 +91,44 @@ Scope from [market-research.md](market-research.md):
 
 Deferred (product decision): fee plans, invoices, online payment (mada, Apple Pay, SADAD), ZATCA Phase 2 e-invoicing, subscription billing, application/seat fees.
 
-## Phase 3 — Extended
+## Phase 3 — Extended ✅
 
-- Flutter app for guardians, students and teachers
-- Homework, LMS and quizzes — SkyLearn
-- Behaviour / discipline — RosarioSIS
-- Leave requests — College-ERP
-- Transport, library, clinic, inventory
-- HR and payroll (GOSI, Mudad export)
-- Noor export/import; Qiyas / Nafes tracking; analytics
+Wave 1
+- [x] School setup screens and platform console (above)
+- [x] Exports: student list in Noor's layout (re-importable), attendance summary, term results; every export audited
+
+Wave 2 — school life
+- [x] Homework per section and subject with attachments; families see their children's homework
+- [x] Behaviour: categories by degree with points (starting values modelled on the Ministry's behaviour and attendance rules — each school checks them), behaviour score per student, guardian notices, student counsellor role
+- [x] Absence excuses from guardians; approval turns absences in the range into "excused", also for registers taken later
+- [x] Staff leave requests and approval; who is away today
+
+Wave 3 — services
+- [x] Clinic: health card per student (families keep it current), nurse visits, guardian notice when a child is sent home or referred; nurse role
+- [x] Library: catalogue, loans to students and staff, returns, overdue; librarian role
+- [x] Transport: buses and crews, routes, stops and times, riders within capacity, printable list; families see bus and times
+- [x] Inventory: asset register with location, condition, custodian and value; Excel export
+
+Wave 4 — learning, staff pay, results
+- [x] Online quizzes (choice, several answers, true/false, short answers with Arabic-tolerant marking), timer, results per question, copy scores to the mark book
+- [x] Student and guardian portal logins by invitation
+- [x] Payroll: contracts, monthly runs with GOSI contributions (rates in `config/madrasa_payroll.php` — confirm with GOSI), adjustments, four-eyes approval, Excel register for the bank / Mudad (WPS) upload, payslips
+- [x] National tests (Nafes, Qiyas Tahsili / Qudrat): results by hand or Excel, averages by section, spread of results
+- [x] Analytics: attendance by week and section, subject averages, enrolment, admissions, students to follow up
+
+Wave 5 — delivery
+- [x] Installable web app (PWA) with an offline notice; no personal pages cached
+- [x] Family API for a mobile app ([api.md](api.md))
+- [x] Production Docker image and compose stack (web, worker, scheduler, PostgreSQL, Redis, Gotenberg, nightly backups) — built and smoke-tested ([deployment.md](deployment.md))
+- [x] Second security review of all new modules; findings fixed with tests ([security-review.md](security-review.md))
+
+Not built (and why)
+- Fees, invoices, online payment, ZATCA e-invoicing, subscription billing — deferred by product decision
+- Native Flutter app — the PWA and the family API cover phones for now; a native app builds on the same API
+- Direct Noor integration — Noor has no public API; exchange is by Excel files
+- Resumable admission form; document checklist by nationality — waiting for pilot schools' lists
+- CAPTCHA on the public form (honeypot, timing and daily caps are in place), malware scanning of uploads (needs a scanner in the hosting setup)
+- Real Noor export file and 2025 Ministry grading PDFs still needed to confirm the importer aliases and starting scales
 
 ## Always
 

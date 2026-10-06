@@ -32,7 +32,7 @@ class EnrolApplicant
 
         return DB::transaction(function () use ($application, $section, $by) {
             $window = $application->window;
-            $existing = GuardianMatcher::find($application->guardian_national_id, $application->guardian_phone);
+            $existing = GuardianMatcher::findStrict($application->guardian_national_id, $application->guardian_phone);
 
             $guardian = $existing
                 ? ['guardian_id' => $existing->id]
