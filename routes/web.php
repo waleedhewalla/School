@@ -15,6 +15,7 @@ use App\Http\Controllers\Web\InvitationController;
 use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\MarksController;
 use App\Http\Controllers\Web\PasswordResetController;
+use App\Http\Controllers\Web\PlatformController;
 use App\Http\Controllers\Web\PortalController;
 use App\Http\Controllers\Web\PromotionController;
 use App\Http\Controllers\Web\ResultsController;
@@ -72,6 +73,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/schools', [SchoolSwitchController::class, 'index'])->name('schools.select');
 
     Route::post('/schools', [SchoolSwitchController::class, 'store'])->name('schools.switch');
+
+    // SaaS operator console (platform admins with two-factor sign-in).
+    Route::middleware('can:platform')->prefix('/platform')->group(function () {
+        Route::get('/', [PlatformController::class, 'index'])->name('platform.index');
+        Route::post('/schools', [PlatformController::class, 'store'])->name('platform.schools.store');
+        Route::patch('/schools/{school}', [PlatformController::class, 'update'])->name('platform.schools.update');
+        Route::post('/schools/{school}/enter', [PlatformController::class, 'enter'])->name('platform.schools.enter');
+    });
 
     Route::middleware('school')->group(function () {
         Route::get('/dashboard', DashboardController::class)->name('dashboard');

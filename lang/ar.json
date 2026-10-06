@@ -533,5 +533,21 @@
     "campus.mixed": "مختلط",
     "current": "الحالي",
     "Deleted.": "تم الحذف.",
-    "Saved.": "تم الحفظ."
+    "Saved.": "تم الحفظ.",
+    "Add a school": "إضافة مدرسة",
+    "Create school": "إنشاء المدرسة",
+    "Last register": "آخر تحضير",
+    "Platform": "المنصة",
+    "Platform console": "لوحة المنصة",
+    "School": "المدرسة",
+    "School admin email": "بريد مدير المدرسة",
+    "School admin name": "اسم مدير المدرسة",
+    "Schools": "المدارس",
+    "Search": "بحث",
+    "Short address": "العنوان المختصر",
+    "Suspend": "إيقاف",
+    "Suspend :school? Its users will not be able to sign in to it.": "إيقاف :school؟ لن يتمكن مستخدموها من الدخول إليها.",
+    "The school gets Saudi stages and grades, attendance codes, a bell schedule and grading scales. The admin receives an invitation email.": "تُنشأ للمدرسة المراحل والصفوف السعودية ورموز الحضور والجدول الزمني وسلالم التقدير، ويصل لمديرها بريد دعوة.",
+    "school_status.active": "نشطة",
+    "school_status.suspended": "موقوفة"
 }

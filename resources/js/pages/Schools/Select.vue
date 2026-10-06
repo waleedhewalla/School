@@ -11,7 +11,8 @@ const page = usePage();
     <div class="flex min-h-screen items-center justify-center px-4">
         <div class="w-full max-w-md space-y-3">
             <h1 class="text-xl font-semibold">{{ t('Choose a school') }}</h1>
-            <p v-if="!page.props.schools.length" class="card text-muted">{{ t('Your account is not linked to any school yet.') }}</p>
+            <a v-if="page.props.auth.platform" href="/platform" class="card block font-semibold text-accent hover:border-accent">{{ t('Platform console') }}</a>
+            <p v-if="!page.props.schools.length && !page.props.auth.platform" class="card text-muted">{{ t('Your account is not linked to any school yet.') }}</p>
             <button
                 v-for="school in page.props.schools"
                 :key="school.id"

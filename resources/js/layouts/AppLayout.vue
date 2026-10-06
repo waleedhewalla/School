@@ -103,7 +103,8 @@ const isActive = (item) => {
                     <button type="button" class="btn-ghost px-2 py-1 lg:hidden" :aria-expanded="menuOpen" :aria-label="t('Main menu')" @click="menuOpen = !menuOpen">☰</button>
                     <span class="font-semibold lg:hidden">{{ page.props.school?.name ?? t('Madrasa') }}</span>
                     <div class="ms-auto flex items-center gap-3 text-sm">
-                        <Link v-if="page.props.schools.length > 1" href="/schools" class="text-muted hover:text-ink">{{ t('Switch school') }}</Link>
+                        <a v-if="page.props.auth.platform" href="/platform" class="text-muted hover:text-ink">{{ t('Platform console') }}</a>
+                        <Link v-else-if="page.props.schools.length > 1" href="/schools" class="text-muted hover:text-ink">{{ t('Switch school') }}</Link>
                         <a :href="`/locale/${otherLocale}`" class="text-muted hover:text-ink">{{ otherLocale === 'ar' ? 'العربية' : 'English' }}</a>
                         <Link href="/account" class="hidden text-muted hover:text-ink sm:inline">{{ page.props.auth.user?.name }}</Link>
                         <button type="button" class="text-muted hover:text-ink" @click="router.post('/logout')">{{ t('Sign out') }}</button>

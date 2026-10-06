@@ -38,6 +38,7 @@ class HandleInertiaRequests extends Middleware
             'translations' => fn () => $this->translations(),
             'auth' => [
                 'user' => $user?->only(['id', 'name', 'email', 'locale']),
+                'platform' => fn () => (bool) $user?->platformAccessAllowed(),
             ],
             'school' => fn () => $school()?->only(['id', 'slug', 'name']),
             'schools' => fn () => $user?->schools()->wherePivot('status', 'active')->get()

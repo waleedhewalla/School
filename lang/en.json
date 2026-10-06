@@ -96,5 +96,7 @@
     "Application period": "Application period",
     "campus.female": "Girls",
     "campus.male": "Boys",
-    "campus.mixed": "Mixed"
+    "campus.mixed": "Mixed",
+    "school_status.active": "Active",
+    "school_status.suspended": "Suspended"
 }

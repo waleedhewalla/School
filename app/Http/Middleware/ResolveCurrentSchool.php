@@ -33,7 +33,7 @@ class ResolveCurrentSchool
             // Browsers are sent to pick a school; API clients get an error.
             return $request->expectsJson()
                 ? abort(400, __('tenancy.school_required'))
-                : redirect()->route('schools.select');
+                : redirect()->route($user->platformAccessAllowed() && $user->schools()->doesntExist() ? 'platform.index' : 'schools.select');
         }
         abort_unless($user->canEnterSchool($school), 403, __('tenancy.not_a_member'));
 
