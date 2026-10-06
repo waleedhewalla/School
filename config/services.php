@@ -60,6 +60,7 @@ return [
     'whatsapp' => [
         'driver' => env('WHATSAPP_DRIVER', 'log'),
         'attendance_template' => env('WHATSAPP_ATTENDANCE_TEMPLATE', 'attendance_alert'),
+        'admission_template' => env('WHATSAPP_ADMISSION_TEMPLATE', 'admission_update'),
         'meta' => [
             'token' => env('WHATSAPP_TOKEN'),
             'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),

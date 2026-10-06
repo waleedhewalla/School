@@ -160,7 +160,7 @@ const submit = () => {
                 <p v-if="!year" class="text-sm text-muted">{{ t('No current academic year; the student will be saved without enrollment.') }}</p>
                 <div v-else class="grid gap-4 sm:grid-cols-2">
                     <div>
-                        <label class="label" for="grade">{{ t('Grade') }}</label>
+                        <label class="label" for="grade">{{ t('Grade level') }}</label>
                         <select id="grade" v-model="form.enrollment.grade_level_id" class="input" @change="form.enrollment.section_id = ''">
                             <option value="">{{ t('Not now') }}</option>
                             <option v-for="g in grades" :key="g.id" :value="g.id">{{ g.name }}</option>

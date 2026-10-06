@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('madrasa:prune-imports')->daily();
+Schedule::command('madrasa:prune-admission-documents')->daily();

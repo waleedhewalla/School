@@ -8,7 +8,9 @@ use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AdmissionWindow;
 use App\Models\Announcement;
+use App\Models\Application;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\GradeLevel;
@@ -64,7 +66,7 @@ trait CreatesSchools
      * A current year with two sections of grade 1 (primary), a subject, a
      * teacher assigned to section A, and two enrolled students in A.
      *
-     * @return array{year: AcademicYear, grade: GradeLevel, sectionA: Section, sectionB: Section, subject: Subject, teacher: User, staff: StaffMember, students: list<Student>}
+     * @return array{year: AcademicYear, grade: GradeLevel, sectionA: Section, sectionB: Section, subject: Subject, teacher: User, staff: StaffMember, students: list<Student>, window: AdmissionWindow, application: Application}
      */
     protected function seedSchoolData(School $school): array
     {
@@ -122,8 +124,33 @@ trait CreatesSchools
                 'to' => '966500000000', 'body' => 'test', 'status' => 'sent',
             ]);
 
-            return compact('year', 'grade', 'sectionA', 'sectionB', 'subject', 'teacher', 'staff', 'students');
+            // Admissions: an open grade-1 window with one submitted application.
+            $window = AdmissionWindow::query()->create([
+                'academic_year_id' => $year->id, 'grade_level_id' => $grade->id, 'seats' => 2,
+                'opens_on' => now()->subDays(5), 'closes_on' => now()->addDays(30),
+            ]);
+            // Created directly: SubmitApplication would text the family and upset messaging tests.
+            [$reference, $token] = Application::newIdentifiers($year);
+            $application = Application::query()->create($this->applicationData() + [
+                'admission_window_id' => $window->id, 'reference' => $reference, 'token' => $token,
+                'token_hash' => hash('sha256', $token), 'status' => 'submitted', 'age_check' => 'ok',
+                'consented_at' => now(), 'submitted_at' => now(),
+            ]);
+            $application->events()->create(['to_status' => 'submitted']);
+            $application->documents()->create(['type' => 'photo', 'path' => 'admissions/x/photo.jpg', 'original_name' => 'photo.jpg']);
+
+            return compact('year', 'grade', 'sectionA', 'sectionB', 'subject', 'teacher', 'staff', 'students', 'window', 'application');
         });
+    }
+
+    /** @return array<string, mixed> a valid public admission form submission (minus the window and consent) */
+    protected function applicationData(array $overrides = []): array
+    {
+        return $overrides + [
+            'first_name_ar' => 'ريم', 'father_name_ar' => 'سعد', 'family_name_ar' => 'الزهراني',
+            'gender' => 'female', 'date_of_birth' => '2020-03-01', 'nationality' => 'SA',
+            'guardian_name' => 'سعد الزهراني', 'guardian_phone' => '0559998877', 'guardian_relationship' => 'father',
+        ];
     }
 
     /** A valid Saudi national ID (or iqama when $first is 2) built from a seed. */

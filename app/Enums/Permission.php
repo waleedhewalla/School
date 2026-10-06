@@ -49,6 +49,8 @@ final class Permission
 
     public const AnnouncementsManage = 'announcements.manage';
 
+    public const AdmissionsManage = 'admissions.manage';
+
     public const AuditView = 'audit.view';
 
     /** @return list<string> */

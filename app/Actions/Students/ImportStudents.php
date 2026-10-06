@@ -11,6 +11,7 @@ use App\Models\Student;
 use App\Rules\SaudiNationalId;
 use App\Support\ArabicName;
 use App\Support\Dates\SchoolDate;
+use App\Support\GuardianMatcher;
 use App\Support\Import\GradeNameResolver;
 use App\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
@@ -186,12 +187,7 @@ class ImportStudents
             return [];
         }
 
-        $existing = Guardian::query()
-            ->where(fn ($q) => $q
-                ->when($g['national_id'], fn ($q, $id) => $q->orWhere('national_id', $id))
-                ->when($g['phone'], fn ($q, $phone) => $q->orWhere('phone', $phone)))
-            ->when($g['national_id'] === null && $g['phone'] === null, fn ($q) => $q->whereRaw('1 = 0'))
-            ->first();
+        $existing = GuardianMatcher::find($g['national_id'], $g['phone']);
 
         if ($existing) {
             return [['guardian_id' => $existing->id, 'relationship' => 'father', 'is_primary' => true]];

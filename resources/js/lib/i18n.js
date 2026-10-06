@@ -25,3 +25,6 @@ export function formatDate(value, locale) {
         day: 'numeric', month: 'short', year: 'numeric',
     }).format(new Date(`${value}T00:00:00`));
 }
+
+/** Wraps codes like 1449-0006 so they keep their order inside Arabic text. */
+export const ltr = (value) => `\u2066${value}\u2069`;

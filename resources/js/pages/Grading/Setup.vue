@@ -35,7 +35,7 @@ const copy = (id) => router.post('/grading/copy', { ...filters, subject_id: id }
                 </select>
             </div>
             <div>
-                <label class="label" for="grade">{{ t('Grade') }}</label>
+                <label class="label" for="grade">{{ t('Grade level') }}</label>
                 <select id="grade" v-model="filters.grade_level_id" class="input min-w-56">
                     <option value="">{{ t('Choose a grade') }}</option>
                     <option v-for="g in grades" :key="g.id" :value="g.id">{{ g.name }}</option>

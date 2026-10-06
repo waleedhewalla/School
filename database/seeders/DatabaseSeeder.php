@@ -2,14 +2,18 @@
 
 namespace Database\Seeders;
 
+use App\Actions\Admissions\ChangeApplicationStatus;
+use App\Actions\Admissions\SubmitApplication;
 use App\Actions\Attendance\RecordAttendance;
 use App\Actions\Grades\SaveAssessmentComponents;
 use App\Actions\Schools\AddSchoolMember;
 use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
 use App\Actions\Timetable\PlaceLesson;
+use App\Enums\ApplicationStatus;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AdmissionWindow;
 use App\Models\Announcement;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
@@ -55,7 +59,7 @@ class DatabaseSeeder extends Seeder
         $parent = User::factory()->create(['name' => 'ولي أمر تجريبي', 'email' => 'parent@example.com', 'locale' => 'ar']);
         $addMember->handle($school, $parent, SchoolRole::Guardian);
 
-        $currentSchool->run($school, function () use ($teacher, $parent) {
+        $currentSchool->run($school, function () use ($teacher, $parent, $admin) {
             $year = AcademicYear::query()->create([
                 'name' => '1448',
                 'starts_on' => '2026-08-23',
@@ -95,7 +99,48 @@ class DatabaseSeeder extends Seeder
             }
 
             $this->seedStudents($year, $teacher, $parent);
+            $this->seedAdmissions($admin);
         });
+    }
+
+    /** Next year's intake: KG1 and grade 1 windows open now, with applications at different steps. */
+    private function seedAdmissions(User $admin): void
+    {
+        $next = AcademicYear::query()->create(['name' => '1449', 'starts_on' => '2027-08-22', 'ends_on' => '2028-06-08']);
+        $grade = fn (string $en) => GradeLevel::query()->where('name_en', $en)->value('id');
+
+        $kg = AdmissionWindow::query()->create([
+            'academic_year_id' => $next->id, 'grade_level_id' => $grade('KG 1'), 'seats' => 20,
+            'opens_on' => today()->subDays(10), 'closes_on' => today()->addDays(45),
+            'born_from' => '2023-01-01', 'born_to' => '2024-08-31',
+        ]);
+        $first = AdmissionWindow::query()->create([
+            'academic_year_id' => $next->id, 'grade_level_id' => $grade('Grade 1'), 'seats' => 2,
+            'opens_on' => today()->subDays(10), 'closes_on' => today()->addDays(45),
+            'born_from' => '2020-09-01', 'born_to' => '2021-08-31', 'exception_days' => 90,
+        ]);
+
+        $submit = app(SubmitApplication::class);
+        $change = app(ChangeApplicationStatus::class);
+        $family = fn (string $first, string $father, string $familyName, string $gender, string $born, string $phone) => [
+            'first_name_ar' => $first, 'father_name_ar' => $father, 'family_name_ar' => $familyName,
+            'gender' => $gender, 'date_of_birth' => $born, 'nationality' => 'SA',
+            'guardian_name' => $father.' '.$familyName, 'guardian_phone' => $phone, 'guardian_relationship' => 'father',
+        ];
+
+        $steps = [
+            [$first, $family('يوسف', 'خالد', 'الشهري', 'male', '2021-03-14', '0551000001'), [ApplicationStatus::UnderReview, ApplicationStatus::Offered]],
+            [$first, $family('لمى', 'فهد', 'القحطاني', 'female', '2021-10-02', '0551000002'), [ApplicationStatus::UnderReview]],
+            [$first, $family('عمر', 'سعد', 'الدوسري', 'male', '2020-12-20', '0551000003'), [ApplicationStatus::UnderReview, ApplicationStatus::Waitlisted]],
+            [$kg, $family('جود', 'ماجد', 'الغامدي', 'female', '2023-06-11', '0551000004'), [ApplicationStatus::UnderReview, ApplicationStatus::AssessmentScheduled]],
+            [$kg, $family('سلمان', 'تركي', 'المطيري', 'male', '2023-09-30', '0551000005'), []],
+        ];
+        foreach ($steps as [$window, $data, $moves]) {
+            [$application] = $submit->handle($window, $data);
+            foreach ($moves as $to) {
+                $change->handle($application, $to, $admin, assessmentAt: $to === ApplicationStatus::AssessmentScheduled ? now()->addDays(5)->setTime(9, 0) : null);
+            }
+        }
     }
 
     /** Grade 1 section أ: 12 students, a math teacher, a parent with two children, and a register for yesterday. */

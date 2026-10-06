@@ -102,6 +102,29 @@ request fields against their current API docs before going live.
 Phones are stored normalized (`9665XXXXXXXX`, see `App\Support\PhoneNumber`)
 so sibling matching and SMS work however a number was typed.
 
+## Admissions
+
+Public pages live under `/apply/{school}` (middleware `public-school`:
+active schools only, `noindex`, `Referrer-Policy: no-referrer`). Families
+follow their application through a private link `/apply/{school}/status/{token}`;
+the token is stored as a SHA-256 hash for lookup and encrypted so later
+messages can repeat the link.
+
+- `AdmissionWindow` — per academic year and grade: dates, seats, birth-date
+  range and exception margin (`Support\Admissions\AgeCheck`).
+- `Application` — status from `Enums\ApplicationStatus`, whose `next()`
+  map is the only source of allowed moves. Offered, accepted and enrolled
+  applications hold a seat.
+- `Actions\Admissions\SubmitApplication`, `ChangeApplicationStatus` (locks
+  the window row so two offers cannot take the last seat), `EnrolApplicant`
+  (reuses `AdmitStudent`; `Support\GuardianMatcher` links siblings).
+- Documents go to the private `local` disk under
+  `admissions/{school}/{application}/`; staff download them through an
+  authorised route. Required types come from `DocumentChecklist`.
+- `Jobs\NotifyApplicant` sends status messages (`message_logs.purpose = admission`).
+
+Staff need `admissions.manage` (school admin, principal, registrar).
+
 ## Noor import
 
 `NoorStudentSheet` finds columns by header text (aliases in

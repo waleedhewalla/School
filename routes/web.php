@@ -2,7 +2,10 @@
 
 use App\Enums\Permission;
 use App\Http\Controllers\Web\AccountController;
+use App\Http\Controllers\Web\AdmissionsController;
+use App\Http\Controllers\Web\AdmissionWindowController;
 use App\Http\Controllers\Web\AnnouncementController;
+use App\Http\Controllers\Web\ApplyController;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
@@ -52,6 +55,15 @@ Route::middleware('guest')->group(function () {
 // Open to guests and signed-in users alike; the token is the credential.
 Route::get('/invitations/{token}', [InvitationController::class, 'show'])->name('invitations.show');
 Route::post('/invitations/{token}', [InvitationController::class, 'accept'])->middleware('throttle:10,1')->name('invitations.accept');
+
+// Public admissions: the form and the family's status page (the token is the credential).
+Route::prefix('/apply/{school}')->middleware('public-school')->where(['school' => '[a-z0-9-]+'])->group(function () {
+    Route::get('/', [ApplyController::class, 'create'])->name('apply.create');
+    Route::post('/', [ApplyController::class, 'store'])->middleware('throttle:5,1')->name('apply.store');
+    Route::get('/status/{token}', [ApplyController::class, 'status'])->middleware('throttle:60,1')->name('apply.status');
+    Route::post('/status/{token}/documents', [ApplyController::class, 'upload'])->middleware('throttle:20,1')->name('apply.upload');
+    Route::post('/status/{token}/respond', [ApplyController::class, 'respond'])->middleware('throttle:10,1')->name('apply.respond');
+});
 
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
@@ -136,6 +148,20 @@ Route::middleware('auth')->group(function () {
             Route::post('/users/invitations', [UserController::class, 'invite'])->name('users.invite');
             Route::delete('/users/invitations/{invitation}', [UserController::class, 'revoke'])->name('users.invitations.revoke');
             Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        });
+
+        Route::middleware('can:'.Permission::AdmissionsManage)->group(function () {
+            Route::get('/admissions', [AdmissionsController::class, 'index'])->name('admissions.index');
+            Route::get('/admissions/windows', [AdmissionWindowController::class, 'index'])->name('admissions.windows');
+            Route::post('/admissions/windows', [AdmissionWindowController::class, 'store'])->name('admissions.windows.store');
+            Route::put('/admissions/windows/{window}', [AdmissionWindowController::class, 'update'])->name('admissions.windows.update');
+            Route::delete('/admissions/windows/{window}', [AdmissionWindowController::class, 'destroy'])->name('admissions.windows.destroy');
+            Route::get('/admissions/{application}', [AdmissionsController::class, 'show'])->whereNumber('application')->name('admissions.show');
+            Route::patch('/admissions/{application}', [AdmissionsController::class, 'update'])->whereNumber('application')->name('admissions.update');
+            Route::post('/admissions/{application}/status', [AdmissionsController::class, 'transition'])->name('admissions.transition');
+            Route::post('/admissions/{application}/enrol', [AdmissionsController::class, 'enrol'])->name('admissions.enrol');
+            Route::patch('/admission-documents/{document}', [AdmissionsController::class, 'reviewDocument'])->name('admissions.documents.review');
+            Route::get('/admission-documents/{document}', [AdmissionsController::class, 'document'])->name('admissions.documents.show');
         });
 
         Route::middleware('can:'.Permission::SchoolManage)->group(function () {

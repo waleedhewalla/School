@@ -5,7 +5,11 @@ namespace Tests\Feature;
 use App\Actions\Schools\AddSchoolMember;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AdmissionWindow;
 use App\Models\Announcement;
+use App\Models\Application;
+use App\Models\ApplicationDocument;
+use App\Models\ApplicationEvent;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\AttendanceCode;
@@ -53,6 +57,7 @@ class TenantIsolationTest extends TestCase
             [Period::class], [TimetableEntry::class],
             [GradingScale::class], [GradingBand::class], [AssessmentComponent::class], [AssessmentScore::class],
             [ReportCardComment::class], [Announcement::class], [Invitation::class],
+            [AdmissionWindow::class], [Application::class], [ApplicationDocument::class], [ApplicationEvent::class],
         ];
     }
 

@@ -26,6 +26,7 @@ const groups = computed(() => [
         label: t('Students'),
         items: [
             { href: '/students', label: t('Students'), show: can.value['students.view'] },
+            { href: '/admissions', label: t('Admissions'), show: can.value['admissions.manage'] },
             { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
         ],
     },

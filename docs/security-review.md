@@ -38,5 +38,23 @@ Blade or Vue (`v-html` only for server-made paginator labels and QR SVG);
 SMS/WhatsApp/Gotenberg URLs come only from env; uploads are type/size
 checked and stored under random names on the private disk.
 
+## Admissions (added after the review)
+
+The public admission pages are the first routes open to anyone. What
+protects them:
+- The school comes from the URL slug, only for active schools; the
+  application is found by the hash of a 40-character random token, inside
+  that school only. Wrong token or wrong school → 404.
+- Throttles: 5 applications, 20 uploads and 10 accept/withdraw actions per
+  minute per IP; 60 status-page views.
+- Uploads: PDF/JPG/PNG up to 5 MB, only the types the checklist asks for,
+  private disk, random names; an accepted document cannot be replaced.
+- Status pages send `Referrer-Policy: no-referrer` and `X-Robots-Tag: noindex`
+  so the private link does not leak to other sites or search engines.
+- Families can only accept an offer or withdraw; every other move is staff
+  only (`admissions.manage`) and checked against the status map.
+- Not done yet: a CAPTCHA on the form (add one if bots appear) and
+  malware scanning of uploads (needs a scanner in the hosting setup).
+
 Repeat this review before each major release and after any change to
 tenancy, roles or sign-in.

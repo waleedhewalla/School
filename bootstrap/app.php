@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\ResolveCurrentSchool;
+use App\Http\Middleware\ResolvePublicSchool;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'school' => ResolveCurrentSchool::class,
+            'public-school' => ResolvePublicSchool::class,
             'locale' => SetLocale::class,
         ]);
 
@@ -33,6 +35,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(
             before: SubstituteBindings::class,
             prepend: ResolveCurrentSchool::class,
+        );
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: ResolvePublicSchool::class,
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -25,12 +25,12 @@ enum SchoolRole: string
                 Permission::AcademicStructureView, Permission::AcademicStructureManage,
                 Permission::StudentsView, Permission::StudentsManage, Permission::StaffView,
                 Permission::AttendanceView, Permission::AttendanceManage,
-                Permission::GradesView, Permission::GradesManage, Permission::AuditView, Permission::TimetableManage, Permission::AnnouncementsManage,
+                Permission::GradesView, Permission::GradesManage, Permission::AuditView, Permission::TimetableManage, Permission::AnnouncementsManage, Permission::AdmissionsManage,
             ],
             self::Registrar => [
                 Permission::AcademicStructureView, Permission::StudentsView,
                 Permission::StudentsManage, Permission::StaffView,
-                Permission::AttendanceView, Permission::AttendanceManage,
+                Permission::AttendanceView, Permission::AttendanceManage, Permission::AdmissionsManage,
             ],
             // Teachers see and take registers only for sections they teach (SectionPolicy).
             self::Teacher => [

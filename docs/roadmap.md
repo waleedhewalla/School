@@ -76,14 +76,17 @@ Next (Phase 1 wrap-up)
 ## Phase 2 — Admissions (fees and ZATCA deferred)
 
 Scope from [market-research.md](market-research.md):
-- [ ] Intake windows per year and grade, with seat counts
-- [ ] Public Arabic-first application form (phone-friendly, resumable), sibling flag
-- [ ] Age check against a per-year cutoff table edited by the school
-- [ ] Document checklist per grade and nationality, uploads, accept/reject with reason
-- [ ] Pipeline: submitted → review → assessment booked → assessed → offered / waitlisted / rejected → accepted → enrolled (Noor transfer pending)
-- [ ] Status notifications by SMS / WhatsApp / email
-- [ ] One-click enrol into student, guardian and family records
-- [ ] Waitlist with sibling priority as a sort
+- [x] Intake windows per year and grade, with seat counts (`/admissions/windows`)
+- [x] Public Arabic-first application form at `/apply/{school}`, phone-friendly; sibling priority detected from the guardian's ID or mobile
+- [ ] Resumable draft of the form (today: the form is short and documents are uploaded later from the status page)
+- [x] Age check: each window has a birth-date range and an exception margin (e.g. 90 days for grade 1); outside → refused, margin → flagged
+- [x] Document checklist by grade and background (vaccination for KG and grade 1, report card when changing school, financial clearance from a private school), uploads on the private status page, accept/reject with a reason
+- [ ] Checklist by nationality (iqama, passport) — waiting for real school lists
+- [x] Pipeline: submitted → review → interview → interviewed → offered / waitlisted / rejected → accepted → enrolled, with history, seat check on offers, and a "Noor transfer done" flag
+- [x] Status messages by SMS / WhatsApp / email, with the private link; quiet hours respected
+- [x] One-click enrol into student, guardian and family records (existing guardian reused, so siblings share a family)
+- [x] Waitlist sorted siblings first, then by submission time
+- [x] PDPL: consent recorded on submission; documents of rejected/withdrawn applications deleted after 90 days (`madrasa:prune-admission-documents`, daily)
 
 Deferred (product decision): fee plans, invoices, online payment (mada, Apple Pay, SADAD), ZATCA Phase 2 e-invoicing, subscription billing, application/seat fees.
 
