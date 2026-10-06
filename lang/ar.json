@@ -549,5 +549,14 @@
     "Suspend :school? Its users will not be able to sign in to it.": "إيقاف :school؟ لن يتمكن مستخدموها من الدخول إليها.",
     "The school gets Saudi stages and grades, attendance codes, a bell schedule and grading scales. The admin receives an invitation email.": "تُنشأ للمدرسة المراحل والصفوف السعودية ورموز الحضور والجدول الزمني وسلالم التقدير، ويصل لمديرها بريد دعوة.",
     "school_status.active": "نشطة",
-    "school_status.suspended": "موقوفة"
+    "school_status.suspended": "موقوفة",
+    "Attendance summary": "ملخص الحضور",
+    "Download Excel": "تنزيل Excel",
+    "Exports hold personal data. They are logged; store and share them carefully.": "تحتوي الملفات المصدَّرة على بيانات شخصية، وتُسجَّل كل عملية تصدير؛ احفظوها وشاركوها بحذر.",
+    "ID, name, gender, Hijri birth date, nationality, grade, section and guardian, with the same headers as the Noor import.": "الهوية والاسم والجنس وتاريخ الميلاد الهجري والجنسية والصف والفصل وولي الأمر، بنفس عناوين أعمدة ملف نور.",
+    "One sheet per section: each subject's percentage and grade, and the overall average.": "ورقة لكل فصل: نسبة كل مادة وتقديرها والمعدل العام.",
+    "Reports and exports": "التقارير والتصدير",
+    "Student list (Noor layout)": "قائمة الطلاب (بصيغة نور)",
+    "Term results": "نتائج الفصل الدراسي",
+    "No results to export.": "لا توجد نتائج للتصدير."
 }

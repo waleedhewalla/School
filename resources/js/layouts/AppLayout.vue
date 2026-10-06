@@ -50,6 +50,7 @@ const groups = computed(() => [
     {
         label: t('Administration'),
         items: [
+            { href: '/exports', label: t('Reports and exports'), show: can.value['students.manage'] || can.value['grades.view'] || can.value['attendance.view'] },
             { href: '/setup/years', match: '/setup', label: t('School setup'), show: can.value['academic-structure.manage'] },
             { href: '/staff', label: t('Staff'), show: can.value['staff.manage'] },
             { href: '/users', label: t('Users'), show: can.value['members.manage'] },

@@ -9,6 +9,7 @@ use App\Http\Controllers\Web\ApplyController;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
+use App\Http\Controllers\Web\ExportController;
 use App\Http\Controllers\Web\GradingSetupController;
 use App\Http\Controllers\Web\GuardianLookupController;
 use App\Http\Controllers\Web\InvitationController;
@@ -137,6 +138,14 @@ Route::middleware('auth')->group(function () {
         Route::get('/report-cards/{section}/{term}', [ResultsController::class, 'print'])->name('report-cards.print');
         Route::get('/report-cards/{section}/{term}/pdf', [ResultsController::class, 'pdf'])->name('report-cards.pdf');
         Route::post('/report-cards/{section}/{term}/comments', [ResultsController::class, 'comment'])->name('report-cards.comment');
+
+        // Each export checks its own permission (students, attendance or grades).
+        Route::get('/exports', [ExportController::class, 'index'])->middleware('can:'.Permission::AcademicStructureView)->name('exports.index');
+        Route::middleware('throttle:20,1')->group(function () {
+            Route::get('/exports/students', [ExportController::class, 'students'])->name('exports.students');
+            Route::get('/exports/attendance', [ExportController::class, 'attendance'])->name('exports.attendance');
+            Route::get('/exports/results', [ExportController::class, 'results'])->name('exports.results');
+        });
 
         Route::get('/announcements', [AnnouncementController::class, 'index'])
             ->middleware('can:'.Permission::AcademicStructureView)->name('announcements.index');
