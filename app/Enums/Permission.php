@@ -1,0 +1,47 @@
+<?php
+
+namespace App\Enums;
+
+/**
+ * Permission names, kept as constants so they are greppable and typo-safe.
+ * Guardians and students get no staff permissions; their access is decided
+ * by ownership (their own child / own record) in policies instead.
+ */
+final class Permission
+{
+    public const SchoolManage = 'school.manage';
+
+    public const MembersManage = 'members.manage';
+
+    public const AcademicStructureView = 'academic-structure.view';
+
+    public const AcademicStructureManage = 'academic-structure.manage';
+
+    public const StudentsView = 'students.view';
+
+    public const StudentsManage = 'students.manage';
+
+    public const StaffView = 'staff.view';
+
+    public const StaffManage = 'staff.manage';
+
+    public const AttendanceView = 'attendance.view';
+
+    public const AttendanceRecord = 'attendance.record';
+
+    public const GradesView = 'grades.view';
+
+    public const GradesRecord = 'grades.record';
+
+    public const FinanceView = 'finance.view';
+
+    public const FinanceManage = 'finance.manage';
+
+    public const AuditView = 'audit.view';
+
+    /** @return list<string> */
+    public static function all(): array
+    {
+        return array_values((new \ReflectionClass(self::class))->getConstants());
+    }
+}
