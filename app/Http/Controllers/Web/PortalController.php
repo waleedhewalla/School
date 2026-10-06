@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\Term;
+use App\Support\Grades\TermResults;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,8 +23,22 @@ class PortalController extends Controller
             ])
             ->get();
 
+        $published = Term::query()->whereNotNull('results_published_at')
+            ->whereHas('academicYear', fn ($q) => $q->where('is_current', true))->orderBy('sequence')->get();
+
         return Inertia::render('Portal/Children', [
             'children' => $children->map(fn (Student $child) => [
+                'results' => $child->currentEnrollment?->section_id ? $published->map(function (Term $term) use ($child) {
+                    $section = $child->currentEnrollment->section;
+                    $row = TermResults::forSection($section, $term, collect([$child]))['students'][0] ?? null;
+
+                    return [
+                        'term' => $term->name,
+                        'average' => $row['average'] ?? null,
+                        'grade' => $row['average_grade'] ?? null,
+                        'url' => "/report-cards/{$section->id}/{$term->id}?student_id={$child->id}",
+                    ];
+                })->values() : [],
                 'id' => $child->id,
                 'name' => $child->name,
                 'student_number' => $child->student_number,

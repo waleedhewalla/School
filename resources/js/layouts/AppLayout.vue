@@ -17,8 +17,11 @@ const nav = computed(() => [
     // Teachers get their own week; managers and office staff see section timetables.
     { href: '/timetable', label: t('Timetable'), show: can.value['timetable.manage'] || (can.value['academic-structure.view'] && !can.value['attendance.record']) },
     { href: '/my/timetable', label: t('My timetable'), show: can.value['attendance.record'] && !can.value['timetable.manage'] },
+    { href: '/marks', label: t('Marks'), show: can.value['grades.record'] || can.value['grades.manage'] },
+    { href: '/results', label: t('Results'), show: can.value['grades.view'] },
+    { href: '/grading', label: t('Assessments'), show: can.value['grades.manage'] },
     { href: '/promotions', label: t('Promotion'), show: can.value['students.manage'] },
-    { href: can.value['timetable.manage'] ? '/settings/periods' : '/settings/notifications', label: t('Settings'), show: can.value['timetable.manage'] || can.value['school.manage'] },
+    { href: can.value['timetable.manage'] ? '/settings/periods' : '/settings/notifications', label: t('Settings'), show: can.value['timetable.manage'] || can.value['school.manage'] || can.value['grades.manage'] },
     { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
 ].filter((item) => item.show));
 

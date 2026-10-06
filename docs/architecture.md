@@ -123,3 +123,20 @@ teacher copied from the teaching assignment so a unique index backs the
 clashes with friendly messages; `AssignTeacher` moves existing lessons when a
 subject changes teacher, refusing if the new teacher is busy; `SavePeriods`
 won't delete a period that still has lessons.
+
+## Grades
+
+`grading_scales` / `grading_bands` (the highest band whose `min_percent` a
+percentage reaches), `assessment_components` (per term × grade × subject,
+weights total 100) and `assessment_scores` (number, or `is_absent` = 0).
+`App\Support\Grades\TermResults` is the single place results are worked
+out; `resources/js/lib/grades.js` mirrors it only for live feedback while
+typing. A subject is incomplete until every component has a mark;
+incomplete subjects get no grade and don't count toward the average.
+
+`RecordScores::canEnter()` decides who may enter marks: `grades.manage`
+always; `grades.record` only for a subject the user teaches in that section
+and only while `terms.marks_open`. Report cards are a print-styled Blade
+page (`resources/views/report-cards/print.blade.php`, `resources/css/print.css`);
+guardians may open their own child's card only after
+`terms.results_published_at` is set.

@@ -3,12 +3,15 @@
 namespace Database\Seeders;
 
 use App\Actions\Attendance\RecordAttendance;
+use App\Actions\Grades\SaveAssessmentComponents;
 use App\Actions\Schools\AddSchoolMember;
 use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
 use App\Actions\Timetable\PlaceLesson;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AssessmentComponent;
+use App\Models\AssessmentScore;
 use App\Models\GradeLevel;
 use App\Models\Period;
 use App\Models\Section;
@@ -164,6 +167,29 @@ class DatabaseSeeder extends Seeder
             }
 
             $students[] = $student;
+        }
+
+        // Term 1 assessment for the four scheduled subjects, with marks for everyone.
+        $term = $year->terms()->orderBy('sequence')->first();
+        foreach (['MATH', 'ARB', 'QURAN', 'SCI'] as $code) {
+            $subject = Subject::query()->where('code', $code)->first();
+            app(SaveAssessmentComponents::class)->handle($term, $section->gradeLevel, $subject, [
+                ['name_ar' => 'المشاركة والواجبات', 'name_en' => 'Participation & homework', 'max_score' => 10, 'weight' => 20],
+                ['name_ar' => 'الاختبارات القصيرة', 'name_en' => 'Quizzes', 'max_score' => 20, 'weight' => 30],
+                ['name_ar' => 'الاختبار النهائي', 'name_en' => 'Final exam', 'max_score' => 50, 'weight' => 50],
+            ]);
+
+            $components = AssessmentComponent::query()->where('term_id', $term->id)->where('subject_id', $subject->id)->orderBy('sequence')->get();
+            foreach ($students as $index => $student) {
+                $level = [0.95, 0.88, 0.72, 0.6, 0.83, 0.91, 0.45, 0.79, 0.99, 0.67, 0.84, 0.74][$index];
+                foreach ($components as $component) {
+                    AssessmentScore::query()->create([
+                        'assessment_component_id' => $component->id,
+                        'student_id' => $student->id,
+                        'score' => round(min($component->max_score, $component->max_score * $level + random_int(-1, 1)), 1),
+                    ]);
+                }
+            }
         }
 
         $codes = ['P', 'P', 'P', 'A', 'P', 'L', 'P', 'P', 'P', 'P', 'E', 'P'];

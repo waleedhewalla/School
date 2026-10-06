@@ -18,6 +18,16 @@ const page = usePage();
                 <h2 class="text-lg font-semibold">{{ child.name }}</h2>
                 <p class="mb-4 text-sm text-muted">{{ child.class || '—' }} · <span dir="ltr">{{ child.student_number }}</span></p>
 
+                <template v-if="child.results.length">
+                    <h3 class="mb-2 text-sm font-semibold">{{ t('Results') }}</h3>
+                    <ul class="mb-4 space-y-1 text-sm">
+                        <li v-for="r in child.results" :key="r.term" class="flex items-center justify-between gap-2">
+                            <span>{{ r.term }}<template v-if="r.average !== null"> · {{ r.average.toFixed(2) }}٪ · {{ r.grade }}</template></span>
+                            <a :href="r.url" target="_blank" class="text-accent">{{ t('Report card') }}</a>
+                        </li>
+                    </ul>
+                </template>
+
                 <h3 class="mb-2 text-sm font-semibold">{{ t('Recent attendance') }}</h3>
                 <ul class="space-y-1 text-sm">
                     <li v-for="(r, i) in child.attendance" :key="i" class="flex items-center justify-between gap-2">

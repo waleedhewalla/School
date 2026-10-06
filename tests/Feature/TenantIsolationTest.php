@@ -5,12 +5,16 @@ namespace Tests\Feature;
 use App\Actions\Schools\AddSchoolMember;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AssessmentComponent;
+use App\Models\AssessmentScore;
 use App\Models\AttendanceCode;
 use App\Models\AttendanceRecord;
 use App\Models\Campus;
 use App\Models\Enrollment;
 use App\Models\Family;
 use App\Models\GradeLevel;
+use App\Models\GradingBand;
+use App\Models\GradingScale;
 use App\Models\Guardian;
 use App\Models\MessageLog;
 use App\Models\Period;
@@ -44,6 +48,7 @@ class TenantIsolationTest extends TestCase
             [Enrollment::class], [TeachingAssignment::class],
             [AttendanceCode::class], [AttendanceRecord::class], [MessageLog::class],
             [Period::class], [TimetableEntry::class],
+            [GradingScale::class], [GradingBand::class], [AssessmentComponent::class], [AssessmentScore::class],
         ];
     }
 

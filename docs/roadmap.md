@@ -46,10 +46,17 @@ Slice 3 ✅
 - [x] WhatsApp (Meta Cloud API template) and email alerts alongside SMS; per-school channels, alerting statuses and quiet hours
 - [ ] Verify Noor column aliases against real exports from pilot schools (needs a real file)
 
-Slice 4 — next
-- [ ] Assessments: **grading scales** (validated intervals), **exam rules**, weighted **assessment components**, marks entry window, calculated vs final mark — Frappe, Unifiedtransform, ICTSchool
-- [ ] Arabic report cards (PDF)
-- [ ] Announcements; attendance and grade dashboards
+Slice 4 ✅
+- [x] Grading scale per school (bands + pass mark; a starting scale is seeded — review against Ministry rules per stage)
+- [x] Assessment components per term × grade × subject with weights totalling 100; typical structure in one click; copy to other subjects
+- [x] Marks entry: teachers only for their own subjects and only while the term is open; "غ" for absent; live total and grade; every mark change audited
+- [x] Results sheet per section; close/reopen mark entry; publish results to guardians
+- [x] Arabic report cards: print or save as PDF from the browser (one A4 page per student); guardians see their child's card once published
+
+Slice 5 — next
+- [ ] Announcements to guardians/staff; attendance and grade dashboards
+- [ ] Report card extras: attendance summary, teacher comments, behaviour; server-side PDF (Gotenberg or headless Chrome) for bulk download
+- [ ] Subject display order and per-stage grading scales
 
 ## Phase 2 — Finance and admissions
 

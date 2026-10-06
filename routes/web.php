@@ -4,10 +4,13 @@ use App\Enums\Permission;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
+use App\Http\Controllers\Web\GradingSetupController;
 use App\Http\Controllers\Web\GuardianLookupController;
 use App\Http\Controllers\Web\LoginController;
+use App\Http\Controllers\Web\MarksController;
 use App\Http\Controllers\Web\PortalController;
 use App\Http\Controllers\Web\PromotionController;
+use App\Http\Controllers\Web\ResultsController;
 use App\Http\Controllers\Web\SchoolSwitchController;
 use App\Http\Controllers\Web\SettingsController;
 use App\Http\Controllers\Web\StudentController;
@@ -80,6 +83,21 @@ Route::middleware('auth')->group(function () {
             Route::get('/settings/periods', [SettingsController::class, 'periods'])->name('settings.periods');
             Route::put('/settings/periods', [SettingsController::class, 'savePeriods'])->name('settings.periods.save');
         });
+        Route::get('/marks', [MarksController::class, 'index'])->name('marks.index');
+        Route::post('/marks', [MarksController::class, 'store'])->name('marks.store');
+        Route::get('/results', [ResultsController::class, 'index'])->middleware('can:'.Permission::GradesView)->name('results.index');
+        // Staff with grades.view, or a guardian for their own child once results are published.
+        Route::get('/report-cards/{section}/{term}', [ResultsController::class, 'print'])->name('report-cards.print');
+
+        Route::middleware('can:'.Permission::GradesManage)->group(function () {
+            Route::get('/grading', [GradingSetupController::class, 'index'])->name('grading.setup');
+            Route::post('/grading', [GradingSetupController::class, 'save'])->name('grading.save');
+            Route::post('/grading/copy', [GradingSetupController::class, 'copy'])->name('grading.copy');
+            Route::patch('/terms/{term}', [ResultsController::class, 'updateTerm'])->name('terms.update');
+            Route::get('/settings/grading', [GradingSetupController::class, 'scale'])->name('settings.grading');
+            Route::put('/settings/grading', [GradingSetupController::class, 'saveScale'])->name('settings.grading.save');
+        });
+
         Route::middleware('can:'.Permission::SchoolManage)->group(function () {
             Route::get('/settings/notifications', [SettingsController::class, 'notifications'])->name('settings.notifications');
             Route::put('/settings/notifications', [SettingsController::class, 'saveNotifications'])->name('settings.notifications.save');

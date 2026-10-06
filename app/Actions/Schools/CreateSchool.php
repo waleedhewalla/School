@@ -6,6 +6,7 @@ use App\Enums\SchoolRole;
 use App\Models\AttendanceCode;
 use App\Models\Campus;
 use App\Models\GradeLevel;
+use App\Models\GradingScale;
 use App\Models\Period;
 use App\Models\School;
 use App\Models\Stage;
@@ -42,6 +43,7 @@ class CreateSchool
                 $this->seedStages();
                 $this->seedAttendanceCodes();
                 $this->seedPeriods();
+                $this->seedGradingScale();
             });
 
             $this->provisionRoles->handle($school);
@@ -52,6 +54,19 @@ class CreateSchool
 
             return $school;
         });
+    }
+
+    /**
+     * A starting grading scale. Bands and the pass mark differ by stage and
+     * change with Ministry regulations, so schools review it in settings.
+     */
+    private function seedGradingScale(): void
+    {
+        $scale = GradingScale::query()->create(['name' => 'السلم العام', 'is_default' => true, 'pass_percent' => 50]);
+
+        foreach ([[90, 'ممتاز', 'Excellent'], [80, 'جيد جدًا', 'Very good'], [70, 'جيد', 'Good'], [50, 'مقبول', 'Pass'], [0, 'غير مجتاز', 'Not passed']] as [$min, $ar, $en]) {
+            $scale->bands()->create(['min_percent' => $min, 'label_ar' => $ar, 'label_en' => $en]);
+        }
     }
 
     /** A typical Saudi day: seven 45-minute lessons with a break after the third. */

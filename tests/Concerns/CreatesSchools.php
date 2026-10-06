@@ -8,6 +8,8 @@ use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
 use App\Enums\SchoolRole;
 use App\Models\AcademicYear;
+use App\Models\AssessmentComponent;
+use App\Models\AssessmentScore;
 use App\Models\GradeLevel;
 use App\Models\MessageLog;
 use App\Models\Period;
@@ -100,6 +102,12 @@ trait CreatesSchools
                 'teaching_assignment_id' => TeachingAssignment::query()->where('section_id', $sectionA->id)->value('id'),
                 'staff_member_id' => $staff->id, 'day' => 0,
             ]);
+
+            // Math in grade 1, term 1: classwork 40% (out of 20) + final 60% (out of 40).
+            $term = $year->terms()->first();
+            $classwork = AssessmentComponent::query()->create(['term_id' => $term->id, 'grade_level_id' => $grade->id, 'subject_id' => $subject->id, 'name_ar' => 'أعمال السنة', 'max_score' => 20, 'weight' => 40, 'sequence' => 1]);
+            AssessmentComponent::query()->create(['term_id' => $term->id, 'grade_level_id' => $grade->id, 'subject_id' => $subject->id, 'name_ar' => 'الاختبار النهائي', 'max_score' => 40, 'weight' => 60, 'sequence' => 2]);
+            AssessmentScore::query()->create(['assessment_component_id' => $classwork->id, 'student_id' => $students[0]->id, 'score' => 18]);
 
             MessageLog::query()->create([
                 'student_id' => $students[0]->id, 'channel' => 'sms', 'purpose' => 'attendance',

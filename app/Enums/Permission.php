@@ -35,7 +35,11 @@ final class Permission
 
     public const GradesView = 'grades.view';
 
+    /** Enter marks for subjects the user teaches, while the term is open. */
     public const GradesRecord = 'grades.record';
+
+    /** Set up assessments and scales, correct any mark, open/close entry, publish results. */
+    public const GradesManage = 'grades.manage';
 
     public const FinanceView = 'finance.view';
 
