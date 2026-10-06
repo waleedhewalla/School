@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\Announcement;
 use App\Models\BehaviourIncident;
+use App\Models\LibraryLoan;
 use App\Models\Student;
 use App\Models\Term;
 use App\Support\BehaviourScore;
@@ -24,6 +25,7 @@ class PortalController extends Controller
             ->with([
                 'currentEnrollment.gradeLevel', 'currentEnrollment.section',
                 'attendanceRecords' => fn ($q) => $q->with('code')->latest('date')->limit(10),
+                'transport.route.bus', 'transport.stop',
             ])
             ->get();
 
@@ -55,6 +57,16 @@ class PortalController extends Controller
                 })->values() : [],
                 'id' => $child->id,
                 'name' => $child->name,
+                'transport' => $child->transport ? [
+                    'route' => $child->transport->route->name,
+                    'bus' => $child->transport->route->bus?->number,
+                    'stop' => $child->transport->stop?->name,
+                    'pickup_at' => $child->transport->stop?->pickup_at ? substr($child->transport->stop->pickup_at, 0, 5) : null,
+                    'dropoff_at' => $child->transport->stop?->dropoff_at ? substr($child->transport->stop->dropoff_at, 0, 5) : null,
+                    'supervisor_phone' => $child->transport->route->bus?->supervisor_phone,
+                ] : null,
+                'loans' => LibraryLoan::query()->with('book')->where('student_id', $child->id)->whereNull('returned_on')->get()
+                    ->map(fn (LibraryLoan $l) => ['title' => $l->book->title, 'due_on' => $l->due_on->toDateString(), 'overdue' => $l->isOverdue()]),
                 'behaviour' => [
                     'score' => $scores[$child->id]['score'] ?? null,
                     'recent' => $incidents->get($child->id, collect())->take(5)->map(fn (BehaviourIncident $i) => [

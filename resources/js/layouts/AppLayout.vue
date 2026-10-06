@@ -21,6 +21,7 @@ const groups = computed(() => [
             { href: '/my/children', label: t('My children'), show: !can.value['students.view'] },
             { href: '/my/homework', label: t('Homework'), show: !can.value['students.view'] },
             { href: '/my/excuses', label: t('Absence excuses'), show: !can.value['students.view'] },
+            { href: '/my/health', label: t('Health information'), show: !can.value['students.view'] },
             { href: '/announcements', label: t('Announcements'), show: can.value['academic-structure.view'] },
         ],
     },
@@ -43,6 +44,15 @@ const groups = computed(() => [
             { href: '/homework', label: t('Homework'), show: can.value['homework.assign'] },
             { href: '/behaviour', label: t('Behaviour'), show: can.value['behaviour.record'] },
             { href: '/my/leave', label: t('My leave'), show: can.value['academic-structure.view'] },
+        ],
+    },
+    {
+        label: t('Services'),
+        items: [
+            { href: '/clinic', label: t('Clinic'), show: can.value['clinic.manage'] },
+            { href: '/library', label: t('Library'), show: can.value['library.manage'] },
+            { href: '/transport', label: t('Transport'), show: can.value['transport.manage'] },
+            { href: '/inventory', label: t('Inventory'), show: can.value['inventory.manage'] },
         ],
     },
     {

@@ -60,6 +60,15 @@ final class Permission
     /** Record behaviour for any student and edit the behaviour categories. */
     public const BehaviourManage = 'behaviour.manage';
 
+    /** Health records and clinic visits (sensitive: nurse and principal only by default). */
+    public const ClinicManage = 'clinic.manage';
+
+    public const LibraryManage = 'library.manage';
+
+    public const TransportManage = 'transport.manage';
+
+    public const InventoryManage = 'inventory.manage';
+
     public const AuditView = 'audit.view';
 
     /** @return list<string> */

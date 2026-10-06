@@ -105,6 +105,18 @@ class Student extends Model
     }
 
     /** @param  Builder<Student>  $query */
+    /** @return HasOne<StudentTransport, $this> */
+    public function transport(): HasOne
+    {
+        return $this->hasOne(StudentTransport::class);
+    }
+
+    /** @return HasOne<HealthRecord, $this> */
+    public function healthRecord(): HasOne
+    {
+        return $this->hasOne(HealthRecord::class);
+    }
+
     /** @param  Builder<Student>  $query  children of a guardian's login */
     public function scopeGuardedBy(Builder $query, User $user): void
     {

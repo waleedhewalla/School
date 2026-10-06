@@ -107,5 +107,15 @@
     "leave.emergency": "Emergency",
     "leave.exam": "Exam",
     "leave.other": "Other",
-    "role.counselor": "Student counsellor"
+    "role.counselor": "Student counsellor",
+    "clinic.returned_to_class": "Back to class",
+    "clinic.rested": "Rested in clinic",
+    "clinic.sent_home": "Sent home",
+    "clinic.referred": "Referred to a doctor",
+    "condition.good": "Good",
+    "condition.needs_repair": "Needs repair",
+    "condition.damaged": "Damaged",
+    "condition.disposed": "Disposed",
+    "role.nurse": "Nurse",
+    "role.librarian": "Librarian"
 }

@@ -8,13 +8,16 @@ use App\Http\Controllers\Web\AnnouncementController;
 use App\Http\Controllers\Web\ApplyController;
 use App\Http\Controllers\Web\AttendanceController;
 use App\Http\Controllers\Web\BehaviourController;
+use App\Http\Controllers\Web\ClinicController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\EnrollmentController;
 use App\Http\Controllers\Web\ExportController;
 use App\Http\Controllers\Web\GradingSetupController;
 use App\Http\Controllers\Web\GuardianLookupController;
 use App\Http\Controllers\Web\HomeworkController;
+use App\Http\Controllers\Web\InventoryController;
 use App\Http\Controllers\Web\InvitationController;
+use App\Http\Controllers\Web\LibraryController;
 use App\Http\Controllers\Web\LoginController;
 use App\Http\Controllers\Web\MarksController;
 use App\Http\Controllers\Web\PasswordResetController;
@@ -30,6 +33,7 @@ use App\Http\Controllers\Web\StaffController;
 use App\Http\Controllers\Web\StudentController;
 use App\Http\Controllers\Web\StudentImportController;
 use App\Http\Controllers\Web\TimetableController;
+use App\Http\Controllers\Web\TransportController;
 use App\Http\Controllers\Web\UserController;
 use App\Support\Locale;
 use Illuminate\Http\Request;
@@ -179,6 +183,48 @@ Route::middleware('auth')->group(function () {
         Route::get('/leave', [RequestsController::class, 'leave'])->name('leave.index');
         Route::post('/leave/{leave}/review', [RequestsController::class, 'reviewLeave'])->name('leave.review');
         Route::get('/leave/{leave}/attachment', [RequestsController::class, 'leaveAttachment'])->name('leave.attachment');
+
+        // School services.
+        Route::middleware('can:'.Permission::ClinicManage)->group(function () {
+            Route::get('/clinic', [ClinicController::class, 'index'])->name('clinic.index');
+            Route::post('/clinic/visits', [ClinicController::class, 'storeVisit'])->name('clinic.visits.store');
+            Route::get('/clinic/students/{student}', [ClinicController::class, 'student'])->name('clinic.student');
+            Route::put('/clinic/students/{student}', [ClinicController::class, 'saveRecord'])->name('clinic.record');
+        });
+        Route::get('/my/health', [ClinicController::class, 'myHealth'])->name('health.mine');
+        Route::put('/my/health/{student}', [ClinicController::class, 'saveMyHealth'])->middleware('throttle:20,1')->name('health.mine.save');
+
+        Route::middleware('can:'.Permission::LibraryManage)->group(function () {
+            Route::get('/library', [LibraryController::class, 'index'])->name('library.index');
+            Route::post('/library/books', [LibraryController::class, 'storeBook'])->name('library.books.store');
+            Route::put('/library/books/{book}', [LibraryController::class, 'updateBook'])->name('library.books.update');
+            Route::delete('/library/books/{book}', [LibraryController::class, 'destroyBook'])->name('library.books.destroy');
+            Route::post('/library/loans', [LibraryController::class, 'lend'])->name('library.loans.store');
+            Route::post('/library/loans/{loan}/return', [LibraryController::class, 'return'])->name('library.loans.return');
+        });
+
+        Route::middleware('can:'.Permission::TransportManage)->group(function () {
+            Route::get('/transport', [TransportController::class, 'index'])->name('transport.index');
+            Route::post('/transport/buses', [TransportController::class, 'saveBus'])->name('transport.buses.store');
+            Route::put('/transport/buses/{bus}', [TransportController::class, 'saveBus'])->name('transport.buses.update');
+            Route::post('/transport/routes', [TransportController::class, 'saveRoute'])->name('transport.routes.store');
+            Route::get('/transport/routes/{route}', [TransportController::class, 'route'])->name('transport.route');
+            Route::put('/transport/routes/{route}', [TransportController::class, 'saveRoute'])->name('transport.routes.update');
+            Route::delete('/transport/routes/{route}', [TransportController::class, 'destroyRoute'])->name('transport.routes.destroy');
+            Route::post('/transport/routes/{route}/stops', [TransportController::class, 'saveStop'])->name('transport.stops.store');
+            Route::put('/transport/routes/{route}/stops/{stop}', [TransportController::class, 'saveStop'])->name('transport.stops.update');
+            Route::delete('/transport/routes/{route}/stops/{stop}', [TransportController::class, 'destroyStop'])->name('transport.stops.destroy');
+            Route::post('/transport/routes/{route}/riders', [TransportController::class, 'assign'])->name('transport.riders.store');
+            Route::delete('/transport/routes/{route}/riders/{rider}', [TransportController::class, 'unassign'])->name('transport.riders.destroy');
+        });
+
+        Route::middleware('can:'.Permission::InventoryManage)->group(function () {
+            Route::get('/inventory', [InventoryController::class, 'index'])->name('inventory.index');
+            Route::get('/inventory/export', [InventoryController::class, 'export'])->name('inventory.export');
+            Route::post('/inventory', [InventoryController::class, 'save'])->name('inventory.store');
+            Route::put('/inventory/{item}', [InventoryController::class, 'save'])->name('inventory.update');
+            Route::delete('/inventory/{item}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
+        });
 
         Route::get('/announcements', [AnnouncementController::class, 'index'])
             ->middleware('can:'.Permission::AcademicStructureView)->name('announcements.index');

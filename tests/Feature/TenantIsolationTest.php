@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Schools\AddSchoolMember;
 use App\Enums\SchoolRole;
+use App\Models\AbsenceExcuse;
 use App\Models\AcademicYear;
 use App\Models\AdmissionWindow;
 use App\Models\Announcement;
@@ -14,21 +15,34 @@ use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\AttendanceCode;
 use App\Models\AttendanceRecord;
+use App\Models\BehaviourCategory;
+use App\Models\BehaviourIncident;
+use App\Models\Bus;
+use App\Models\BusRoute;
 use App\Models\Campus;
+use App\Models\ClinicVisit;
 use App\Models\Enrollment;
 use App\Models\Family;
 use App\Models\GradeLevel;
 use App\Models\GradingBand;
 use App\Models\GradingScale;
 use App\Models\Guardian;
+use App\Models\HealthRecord;
+use App\Models\Homework;
+use App\Models\InventoryItem;
 use App\Models\Invitation;
+use App\Models\LeaveRequest;
+use App\Models\LibraryBook;
+use App\Models\LibraryLoan;
 use App\Models\MessageLog;
 use App\Models\Period;
 use App\Models\ReportCardComment;
+use App\Models\RouteStop;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Stage;
 use App\Models\Student;
+use App\Models\StudentTransport;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\Term;
@@ -58,6 +72,9 @@ class TenantIsolationTest extends TestCase
             [GradingScale::class], [GradingBand::class], [AssessmentComponent::class], [AssessmentScore::class],
             [ReportCardComment::class], [Announcement::class], [Invitation::class],
             [AdmissionWindow::class], [Application::class], [ApplicationDocument::class], [ApplicationEvent::class],
+            [Homework::class], [BehaviourCategory::class], [BehaviourIncident::class], [AbsenceExcuse::class], [LeaveRequest::class],
+            [HealthRecord::class], [ClinicVisit::class], [LibraryBook::class], [LibraryLoan::class],
+            [Bus::class], [BusRoute::class], [RouteStop::class], [StudentTransport::class], [InventoryItem::class],
         ];
     }
 
@@ -66,8 +83,8 @@ class TenantIsolationTest extends TestCase
     {
         $schoolA = $this->createSchool();
         $schoolB = $this->createSchool();
-        $this->seedSchoolData($schoolA);
-        $this->seedSchoolData($schoolB);
+        $this->seedServiceData($schoolA, $this->seedSchoolData($schoolA));
+        $this->seedServiceData($schoolB, $this->seedSchoolData($schoolB));
 
         $current = app(CurrentSchool::class);
 

@@ -7,14 +7,26 @@ use App\Actions\Schools\AddSchoolMember;
 use App\Actions\Schools\CreateSchool;
 use App\Actions\Students\AdmitStudent;
 use App\Enums\SchoolRole;
+use App\Models\AbsenceExcuse;
 use App\Models\AcademicYear;
 use App\Models\AdmissionWindow;
 use App\Models\Announcement;
 use App\Models\Application;
 use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
+use App\Models\BehaviourCategory;
+use App\Models\BehaviourIncident;
+use App\Models\Bus;
+use App\Models\BusRoute;
+use App\Models\ClinicVisit;
 use App\Models\GradeLevel;
+use App\Models\HealthRecord;
+use App\Models\Homework;
+use App\Models\InventoryItem;
 use App\Models\Invitation;
+use App\Models\LeaveRequest;
+use App\Models\LibraryBook;
+use App\Models\LibraryLoan;
 use App\Models\MessageLog;
 use App\Models\Period;
 use App\Models\ReportCardComment;
@@ -22,6 +34,7 @@ use App\Models\School;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Student;
+use App\Models\StudentTransport;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\TimetableEntry;
@@ -151,6 +164,29 @@ trait CreatesSchools
             'gender' => 'female', 'date_of_birth' => '2020-03-01', 'nationality' => 'SA',
             'guardian_name' => 'سعد الزهراني', 'guardian_phone' => '0559998877', 'guardian_relationship' => 'father',
         ];
+    }
+
+    /** One row of every school-life and service model (for tenant isolation checks). */
+    protected function seedServiceData(School $school, array $d): void
+    {
+        $this->inSchool($school, function () use ($d) {
+            ['year' => $year, 'sectionA' => $sectionA, 'subject' => $subject, 'staff' => $staff, 'students' => $students] = $d;
+            Homework::query()->create(['section_id' => $sectionA->id, 'subject_id' => $subject->id, 'title' => 'واجب', 'due_on' => '2026-09-06']);
+            BehaviourIncident::query()->create(['academic_year_id' => $year->id, 'student_id' => $students[1]->id,
+                'behaviour_category_id' => BehaviourCategory::query()->value('id'), 'occurred_on' => '2026-09-01']);
+            AbsenceExcuse::query()->create(['student_id' => $students[1]->id, 'from_date' => '2026-09-01', 'to_date' => '2026-09-01', 'reason' => 'مرض']);
+            LeaveRequest::query()->create(['staff_member_id' => $staff->id, 'type' => 'annual', 'from_date' => '2026-10-01', 'to_date' => '2026-10-02']);
+            HealthRecord::query()->create(['student_id' => $students[1]->id, 'blood_type' => 'A+']);
+            ClinicVisit::query()->create(['student_id' => $students[1]->id, 'visited_at' => now(), 'complaint' => 'صداع', 'outcome' => 'returned_to_class']);
+            $book = LibraryBook::query()->create(['title' => 'كتاب', 'copies' => 2]);
+            LibraryLoan::query()->create(['library_book_id' => $book->id, 'student_id' => $students[1]->id, 'borrowed_on' => '2026-09-01', 'due_on' => '2026-09-15']);
+            $bus = Bus::query()->create(['number' => '1', 'capacity' => 30]);
+            $route = BusRoute::query()->create(['name' => 'خط', 'bus_id' => $bus->id]);
+            $stop = $route->stops()->create(['name' => 'محطة', 'sequence' => 1]);
+            StudentTransport::query()->create(['student_id' => $students[1]->id, 'bus_route_id' => $route->id, 'route_stop_id' => $stop->id]);
+            InventoryItem::query()->create(['name' => 'طاولة', 'quantity' => 10]);
+
+        });
     }
 
     /** A valid Saudi national ID (or iqama when $first is 2) built from a seed. */

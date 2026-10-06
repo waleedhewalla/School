@@ -20,14 +20,22 @@ use App\Models\AssessmentComponent;
 use App\Models\AssessmentScore;
 use App\Models\BehaviourCategory;
 use App\Models\BehaviourIncident;
+use App\Models\Bus;
+use App\Models\BusRoute;
+use App\Models\ClinicVisit;
 use App\Models\GradeLevel;
+use App\Models\HealthRecord;
 use App\Models\Homework;
+use App\Models\InventoryItem;
 use App\Models\LeaveRequest;
+use App\Models\LibraryBook;
+use App\Models\LibraryLoan;
 use App\Models\Period;
 use App\Models\ReportCardComment;
 use App\Models\Section;
 use App\Models\StaffMember;
 use App\Models\Student;
+use App\Models\StudentTransport;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\User;
@@ -106,7 +114,37 @@ class DatabaseSeeder extends Seeder
             $this->seedStudents($year, $teacher, $parent);
             $this->seedAdmissions($admin);
             $this->seedSchoolLife($year, $teacher, $parent, $admin);
+            $this->seedServices($teacher);
         });
+    }
+
+    /** A bus route, library books with loans, inventory and a few health records. */
+    private function seedServices(User $teacher): void
+    {
+        $students = Student::query()->orderBy('id')->limit(12)->get();
+
+        $bus = Bus::query()->create(['number' => '3', 'plate' => 'أ ب ج 1234', 'capacity' => 26,
+            'driver_name' => 'سالم القرني', 'driver_phone' => '0550001111', 'supervisor_name' => 'محمد الزهراني', 'supervisor_phone' => '0550002222']);
+        $route = BusRoute::query()->create(['name' => 'حي النرجس', 'bus_id' => $bus->id]);
+        $stops = collect([['دوار النرجس', '06:15', '13:20'], ['مسجد الفرقان', '06:25', '13:30'], ['حديقة الحي', '06:35', '13:40']])
+            ->map(fn ($s, $i) => $route->stops()->create(['name' => $s[0], 'sequence' => $i + 1, 'pickup_at' => $s[1], 'dropoff_at' => $s[2]]));
+        foreach ($students->take(6) as $i => $student) {
+            StudentTransport::query()->create(['student_id' => $student->id, 'bus_route_id' => $route->id, 'route_stop_id' => $stops[$i % 3]->id]);
+        }
+
+        foreach ([['قصص الأنبياء', 'ابن كثير', 'قصص', 3], ['كليلة ودمنة', 'ابن المقفع', 'أدب', 2], ['موسوعة العلوم للأطفال', null, 'علوم', 1], ['الرياضيات الممتعة', null, 'رياضيات', 2]] as [$title, $author, $category, $copies]) {
+            LibraryBook::query()->create(['title' => $title, 'author' => $author, 'category' => $category, 'copies' => $copies, 'shelf' => 'A'.random_int(1, 9)]);
+        }
+        LibraryLoan::query()->create(['library_book_id' => LibraryBook::query()->value('id'), 'student_id' => $students[2]->id, 'borrowed_on' => today()->subDays(20), 'due_on' => today()->subDays(6)]);
+        LibraryLoan::query()->create(['library_book_id' => LibraryBook::query()->skip(1)->value('id'), 'student_id' => $students[0]->id, 'borrowed_on' => today()->subDays(3), 'due_on' => today()->addDays(11)]);
+
+        foreach ([['سبورة تفاعلية', 'أجهزة', 'الصف الأول أ', 1, 'good', 6500], ['جهاز حاسب محمول', 'أجهزة', 'غرفة المعلمين', 8, 'good', 2800], ['طاولة طالب', 'أثاث', 'الصف الأول أ', 30, 'good', 220], ['مكيف سبليت', 'تكييف', 'المكتبة', 2, 'needs_repair', 1900]] as [$name, $category, $location, $qty, $condition, $value]) {
+            InventoryItem::query()->create(['name' => $name, 'category' => $category, 'location' => $location, 'quantity' => $qty, 'condition' => $condition, 'unit_value' => $value]);
+        }
+
+        HealthRecord::query()->create(['student_id' => $students[1]->id, 'blood_type' => 'O+', 'allergies' => 'حساسية من الفول السوداني', 'emergency_contact_phone' => '0551234567']);
+        HealthRecord::query()->create(['student_id' => $students[4]->id, 'chronic_conditions' => 'ربو', 'medications' => 'بخاخ عند الحاجة']);
+        ClinicVisit::query()->create(['student_id' => $students[4]->id, 'visited_at' => now()->subDay()->setTime(9, 40), 'complaint' => 'ضيق تنفس خفيف', 'outcome' => 'rested', 'recorded_by' => $teacher->id]);
     }
 
     /** Homework, behaviour records, a pending excuse and a pending leave request in grade 1 أ. */

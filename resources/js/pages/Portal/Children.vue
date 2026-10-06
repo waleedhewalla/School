@@ -43,6 +43,28 @@ const page = usePage();
                     <li v-if="!child.attendance.length" class="text-muted">{{ t('No attendance recorded yet.') }}</li>
                 </ul>
 
+                <template v-if="child.transport">
+                    <h3 class="mb-2 mt-4 text-sm font-semibold">{{ t('School bus') }}</h3>
+                    <p class="text-sm">
+                        {{ t('Bus :bus', { bus: child.transport.bus ?? '—' }) }} · {{ child.transport.route }}<template v-if="child.transport.stop"> · {{ child.transport.stop }}</template>
+                    </p>
+                    <p class="text-sm text-muted">
+                        <template v-if="child.transport.pickup_at">{{ t('Pick-up :time', { time: child.transport.pickup_at }) }} · </template>
+                        <template v-if="child.transport.dropoff_at">{{ t('Drop-off :time', { time: child.transport.dropoff_at }) }} · </template>
+                        <a v-if="child.transport.supervisor_phone" :href="`tel:${child.transport.supervisor_phone}`" class="text-accent" dir="ltr">{{ child.transport.supervisor_phone }}</a>
+                    </p>
+                </template>
+
+                <template v-if="child.loans.length">
+                    <h3 class="mb-2 mt-4 text-sm font-semibold">{{ t('Library books') }}</h3>
+                    <ul class="space-y-1 text-sm">
+                        <li v-for="(l, i) in child.loans" :key="i" class="flex justify-between gap-2">
+                            <span>{{ l.title }}</span>
+                            <span :class="l.overdue ? 'font-semibold text-danger' : 'text-muted'">{{ t('Return by :date', { date: formatDate(l.due_on, page.props.locale) }) }}</span>
+                        </li>
+                    </ul>
+                </template>
+
                 <template v-if="child.behaviour.score !== null">
                     <h3 class="mb-2 mt-4 flex items-center gap-2 text-sm font-semibold">
                         {{ t('Behaviour') }}
