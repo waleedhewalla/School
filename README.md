@@ -1,6 +1,6 @@
-# Nibras · نبراس — نظام إدارة المدارس
+# Nbras · نبراس — نظام إدارة المدارس
 
-**Nibras** (نبراس, "lamp") is a multi-school management SaaS for K-12 schools in Saudi Arabia and the GCC.
+**Nbras** (نبراس, "lamp") is a multi-school management SaaS for K-12 schools in Saudi Arabia and the GCC.
 Arabic first (RTL), Hijri and Gregorian dates, built for Noor, ZATCA and PDPL.
 
 نبراس: نظام سحابي لإدارة مدارس التعليم العام في المملكة العربية السعودية والخليج،

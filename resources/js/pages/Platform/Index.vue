@@ -29,7 +29,7 @@ const enter = (s) => router.post(`/platform/schools/${s.id}/enter`);
     <div class="min-h-screen bg-surface">
         <header class="border-b border-line bg-card">
             <div class="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3 text-sm">
-                <span class="text-lg font-semibold text-accent">{{ t('Nibras') }} · {{ t('Platform') }}</span>
+                <span class="text-lg font-semibold text-accent">{{ t('Nbras') }} · {{ t('Platform') }}</span>
                 <a :href="`/locale/${page.props.locale === 'ar' ? 'en' : 'ar'}`" class="ms-auto text-muted hover:text-ink">{{ page.props.locale === 'ar' ? 'English' : 'العربية' }}</a>
                 <Link href="/account" class="text-muted hover:text-ink">{{ page.props.auth.user?.name }}</Link>
                 <button type="button" class="text-muted hover:text-ink" @click="router.post('/logout')">{{ t('Sign out') }}</button>

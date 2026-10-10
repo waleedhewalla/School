@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title inertia>{{ __('Nibras') }}</title>
+    <title inertia>{{ __('Nbras') }}</title>
     <meta name="theme-color" content="#0f6e56">
     <link rel="manifest" href="/manifest.webmanifest">
     <link rel="icon" href="/icons/icon-192.png" type="image/png">

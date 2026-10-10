@@ -22,7 +22,7 @@ const page = usePage();
             <div v-if="page.props.flash?.success" class="mb-4 rounded-lg bg-accent-soft px-4 py-3 text-sm text-accent" role="status">{{ page.props.flash.success }}</div>
             <h1 v-if="title" class="mb-5 text-2xl font-semibold">{{ title }}</h1>
             <slot />
-            <p class="mt-8 text-center text-xs text-muted">{{ t('Powered by Nibras') }}</p>
+            <p class="mt-8 text-center text-xs text-muted">{{ t('Powered by Nbras') }}</p>
         </main>
     </div>
 </template>

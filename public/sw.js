@@ -4,7 +4,7 @@
  * are never cached, so no personal data stays on a shared phone; when the
  * network is down, page loads get a small offline notice instead.
  */
-const VERSION = 'nibras-v1';
+const VERSION = 'nbras-v1';
 const PRECACHE = ['/offline.html', '/icons/icon-192.png', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

@@ -1,4 +1,4 @@
-# Deployment — Nibras
+# Deployment — Nbras
 
 The production stack is in `compose.production.yml`: one Docker image
 (`Dockerfile`, nginx + php-fpm 8.3) runs three roles — **app** (web, applies
@@ -9,6 +9,24 @@ nightly **backup** container.
 
 Host it in a Saudi region (PDPL), e.g. a KSA region of STC Cloud, Oracle
 Jeddah, Google Cloud Dammam or Azure Saudi.
+
+## Domain
+
+| Address | Purpose |
+|---|---|
+| `nbras.sa` | Marketing site |
+| `app.nbras.sa` | The system: schools, staff, families, students (`APP_URL`); admission links are `app.nbras.sa/apply/<school>` |
+| `no-reply@nbras.sa` | Sender of invitations and notices (`MAIL_FROM_ADDRESS`) |
+
+DNS records to create at the registrar:
+
+- `app` → **A** (or **CNAME**) record pointing at the server or load balancer.
+- **SPF** — TXT on `nbras.sa`: `v=spf1 include:<your mail provider> -all`
+- **DKIM** — the TXT/CNAME records your mail provider gives you.
+- **DMARC** — TXT on `_dmarc.nbras.sa`: `v=DMARC1; p=quarantine; rua=mailto:dmarc@nbras.sa`
+- HTTPS certificate for `app.nbras.sa` (Let's Encrypt on the proxy, or the load balancer's certificate).
+
+Register the closest variants too (nbras.com.sa, nbras.app or nbras.com) and redirect them to `nbras.sa`.
 
 ## First install
 
@@ -25,7 +43,7 @@ docker compose -f compose.production.yml --env-file .env.production up -d
 
 # The SaaS operator account (asks for a password, min. 12 characters):
 docker compose -f compose.production.yml --env-file .env.production exec app \
-    gosu application php artisan madrasa:create-platform-admin ops@your-company.sa
+    gosu application php artisan madrasa:create-platform-admin ops@nbras.sa
 ```
 
 Sign in as that account, turn on two-factor sign-in (Account page — required

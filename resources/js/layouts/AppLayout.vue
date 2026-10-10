@@ -104,7 +104,7 @@ const isActive = (item) => {
             :class="menuOpen ? 'translate-x-0' : 'max-lg:ltr:-translate-x-full max-lg:rtl:translate-x-full'"
             :aria-label="t('Main menu')"
         >
-            <Link href="/dashboard" class="mb-1 block px-3 text-lg font-semibold text-accent">{{ t('Nibras') }}</Link>
+            <Link href="/dashboard" class="mb-1 block px-3 text-lg font-semibold text-accent">{{ t('Nbras') }}</Link>
             <div v-if="page.props.school" class="mb-4 px-3 text-sm text-muted">{{ page.props.school.name }}</div>
 
             <nav class="space-y-4 text-sm">
@@ -127,7 +127,7 @@ const isActive = (item) => {
             <header class="border-b border-line bg-card">
                 <div class="flex items-center gap-3 px-4 py-3">
                     <button type="button" class="btn-ghost px-2 py-1 lg:hidden" :aria-expanded="menuOpen" :aria-label="t('Main menu')" @click="menuOpen = !menuOpen">☰</button>
-                    <span class="font-semibold lg:hidden">{{ page.props.school?.name ?? t('Nibras') }}</span>
+                    <span class="font-semibold lg:hidden">{{ page.props.school?.name ?? t('Nbras') }}</span>
                     <div class="ms-auto flex items-center gap-3 text-sm">
                         <a v-if="page.props.auth.platform" href="/platform" class="text-muted hover:text-ink">{{ t('Platform console') }}</a>
                         <Link v-else-if="page.props.schools.length > 1" href="/schools" class="text-muted hover:text-ink">{{ t('Switch school') }}</Link>
