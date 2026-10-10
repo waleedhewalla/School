@@ -91,7 +91,6 @@
     "document.status.pending": "Pending",
     "document.status.accepted": "Accepted",
     "document.status.rejected": "Rejected",
-    "Powered by Madrasa": "Powered by Madrasa",
     "Grade level": "Grade",
     "Application period": "Application period",
     "campus.female": "Girls",
@@ -133,5 +132,8 @@
     "exam_type.nafes": "Nafes",
     "exam_type.tahsili": "Qiyas Tahsili",
     "exam_type.qudrat": "Qiyas Qudrat",
-    "exam_type.other": "Other"
+    "exam_type.other": "Other",
+    "Nibras": "Nibras",
+    "Powered by Nibras": "Powered by Nibras",
+    "You have been invited to join :school on Nibras.": "You have been invited to join :school on Nibras."
 }

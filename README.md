@@ -1,10 +1,13 @@
-# Madrasa — نظام إدارة المدارس
+# Nibras · نبراس — نظام إدارة المدارس
 
-Multi-school management SaaS for K-12 schools in Saudi Arabia and the GCC.
+**Nibras** (نبراس, "lamp") is a multi-school management SaaS for K-12 schools in Saudi Arabia and the GCC.
 Arabic first (RTL), Hijri and Gregorian dates, built for Noor, ZATCA and PDPL.
 
-نظام سحابي لإدارة مدارس التعليم العام في المملكة العربية السعودية والخليج،
+نبراس: نظام سحابي لإدارة مدارس التعليم العام في المملكة العربية السعودية والخليج،
 بالعربية أولًا، مع التاريخ الهجري والميلادي.
+
+Internal names (the `madrasa:*` commands, `config/madrasa*.php`, `MADRASA_*` settings)
+keep the original code name.
 
 ## Status
 

@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="toolbar">
-        <strong>{{ __('Madrasa') }}</strong>
+        <strong>{{ __('Nibras') }}</strong>
         <a href="{{ route('locale.switch', app()->getLocale() === 'ar' ? 'en' : 'ar') }}" aria-label="{{ __('Switch language') }}">
             {{ app()->getLocale() === 'ar' ? 'English' : 'العربية' }}
         </a>

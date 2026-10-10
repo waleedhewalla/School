@@ -1,6 +1,6 @@
-# Madrasa — guidance for contributors and agents
+# Nibras (code name: madrasa) — guidance for contributors and agents
 
-Multi-school K-12 SaaS (Laravel 13, PHP 8.3). Read `docs/architecture.md` first.
+Multi-school K-12 SaaS (Laravel 13, PHP 8.3). Product name: Nibras · نبراس. Read `docs/architecture.md` first.
 
 ## Commands
 

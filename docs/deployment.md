@@ -1,4 +1,4 @@
-# Deployment
+# Deployment — Nibras
 
 The production stack is in `compose.production.yml`: one Docker image
 (`Dockerfile`, nginx + php-fpm 8.3) runs three roles — **app** (web, applies

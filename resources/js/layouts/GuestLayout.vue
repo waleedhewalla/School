@@ -12,7 +12,7 @@ const page = usePage();
     <div class="flex min-h-screen items-center justify-center px-4">
         <div class="w-full max-w-sm">
             <div class="mb-6 flex items-center justify-between">
-                <span class="text-xl font-semibold text-accent">{{ t('Madrasa') }}</span>
+                <span class="text-xl font-semibold text-accent">{{ t('Nibras') }}</span>
                 <a :href="`/locale/${page.props.locale === 'ar' ? 'en' : 'ar'}`" class="text-sm text-muted">
                     {{ page.props.locale === 'ar' ? 'English' : 'العربية' }}
                 </a>

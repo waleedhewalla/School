@@ -1,5 +1,4 @@
 {
-    "Madrasa": "مدرسة",
     "School management for K-12 schools": "نظام إدارة المدارس للتعليم العام",
     "Students, attendance, grades, fees and parent communication in one place.": "الطلاب والحضور والدرجات والرسوم والتواصل مع أولياء الأمور في مكان واحد.",
     "Today": "اليوم",
@@ -324,7 +323,6 @@
     "If an account exists for this email, a reset link has been sent.": "إذا كان هناك حساب بهذا البريد فقد أرسلنا رابط الاستعادة.",
     "Invitation to join :school": "دعوة للانضمام إلى :school",
     "Hello :name,": "مرحبًا :name،",
-    "You have been invited to join :school on Madrasa.": "تمت دعوتك للانضمام إلى :school على منصة مدرسة.",
     "This link expires in 7 days.": "تنتهي صلاحية هذا الرابط خلال 7 أيام.",
     "Reset Password Notification": "استعادة كلمة المرور",
     "You are receiving this email because we received a password reset request for your account.": "وصلك هذا البريد لأننا تلقينا طلبًا لاستعادة كلمة مرور حسابك.",
@@ -411,7 +409,6 @@
     "Opens on": "يفتح في",
     "PDF, JPG or PNG, up to 5 MB each.": "PDF أو JPG أو PNG، بحد أقصى 5 ميجابايت للملف.",
     "Please upload again: :reason": "يرجى الرفع مرة أخرى: :reason",
-    "Powered by Madrasa": "بدعم من مدرسة",
     "Public application form": "نموذج التقديم العام",
     "Reason shown to the family": "السبب الذي يظهر للأسرة",
     "Reference": "رقم الطلب",
@@ -874,5 +871,8 @@
     "exam_type.qudrat": "القدرات",
     "exam_type.other": "أخرى",
     "A new family and guardian record will be created.": "سيُنشأ سجل أسرة وولي أمر جديد.",
-    "Joins the family of :guardian (:children).": "سيُضم إلى أسرة :guardian (:children)."
+    "Joins the family of :guardian (:children).": "سيُضم إلى أسرة :guardian (:children).",
+    "Nibras": "نبراس",
+    "Powered by Nibras": "بدعم من نبراس",
+    "You have been invited to join :school on Nibras.": "تمت دعوتك للانضمام إلى :school على منصة نبراس."
 }
