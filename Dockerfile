@@ -13,7 +13,8 @@ FROM node:22-bookworm-slim AS assets
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN --mount=type=secret,id=proxy_ca,required=false \
-    NODE_EXTRA_CA_CERTS=$([ -f /run/secrets/proxy_ca ] && echo /run/secrets/proxy_ca) npm ci --no-audit --no-fund
+    if [ -f /run/secrets/proxy_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/proxy_ca; fi; \
+    npm ci --no-audit --no-fund
 COPY vite.config.js ./
 COPY resources ./resources
 RUN npm run build
