@@ -37,6 +37,11 @@ case "${1:-web}" in
         fi
         # The web container applies migrations unless told not to.
         if [ "${RUN_MIGRATIONS:-true}" = "true" ]; then artisan migrate --force; fi
+        # Local trials only: fill an empty database with the demo school.
+        if [ "${SEED_DEMO:-false}" = "true" ] && [ "$APP_ENV" != "production" ] \
+            && [ "$(gosu application php artisan tinker --execute='echo App\Models\User::count();' 2>/dev/null | tail -1)" = "0" ]; then
+            artisan db:seed --force
+        fi
         cache
         exec /entrypoint supervisord
         ;;

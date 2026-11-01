@@ -1,0 +1,92 @@
+# Run Nbras on your own computer with Docker Desktop — no PHP, Node or
+# database to install. One command:
+#
+#   docker compose -f compose.local.yml up --build
+#
+# Then open http://localhost:8080 (demo accounts, password "password":
+# admin@example.com, teacher@example.com, parent@example.com,
+# student@example.com, platform@example.com). Emails the app sends
+# (invitations, password resets) appear at http://localhost:8025.
+# Stop with Ctrl+C; start again later with the same command; wipe
+# everything with: docker compose -f compose.local.yml down -v
+#
+# For local trials only: the key and passwords below are public.
+
+x-app: &app
+  image: nbras:local
+  environment:
+    APP_NAME: Nbras
+    APP_ENV: local
+    APP_DEBUG: 'true'
+    APP_KEY: base64:bmJyYXMtbG9jYWwtZGV2LWtleS1kby1ub3QtdXNlISE=
+    APP_URL: http://localhost:8080
+    APP_LOCALE: ar
+    LOG_CHANNEL: stderr
+    DB_CONNECTION: pgsql
+    DB_HOST: postgres
+    DB_PORT: '5432'
+    DB_DATABASE: nbras
+    DB_USERNAME: nbras
+    DB_PASSWORD: local-only
+    REDIS_HOST: redis
+    CACHE_STORE: redis
+    QUEUE_CONNECTION: redis
+    SESSION_DRIVER: redis
+    SESSION_SECURE_COOKIE: 'false'
+    MAIL_MAILER: smtp
+    MAIL_HOST: mailpit
+    MAIL_PORT: '1025'
+    MAIL_FROM_ADDRESS: no-reply@nbras.local
+    SMS_DRIVER: log
+    WHATSAPP_DRIVER: log
+    SEED_DEMO: 'true'
+  volumes:
+    - storage:/app/storage/app
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
+
+services:
+  app:
+    <<: *app
+    build:
+      context: .
+      args:
+        COMPOSER_DEV: 'true'
+    command: web
+    ports: ['8080:80']
+
+  worker:
+    <<: *app
+    command: worker
+    pull_policy: never
+    depends_on: [app]
+    healthcheck: { disable: true }
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: nbras
+      POSTGRES_USER: nbras
+      POSTGRES_PASSWORD: local-only
+    volumes: ['pgdata:/var/lib/postgresql/data']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U nbras -d nbras']
+      interval: 3s
+      retries: 30
+
+  redis:
+    image: redis:7
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 3s
+      retries: 30
+
+  # Catches every email the app sends: open http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+    ports: ['8025:8025']
+
+volumes:
+  pgdata:
+  storage:

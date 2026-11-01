@@ -20,14 +20,17 @@ RUN npm run build
 
 # --- PHP dependencies ------------------------------------------------------
 FROM webdevops/php-nginx:8.3 AS vendor
+# true for local trials (demo data needs the development packages)
+ARG COMPOSER_DEV=false
 WORKDIR /app
 COPY composer.json composer.lock ./
 RUN --mount=type=secret,id=proxy_ca,required=false \
     if [ -f /run/secrets/proxy_ca ]; then export COMPOSER_CAFILE=/run/secrets/proxy_ca; fi; \
-    composer install --no-dev --no-interaction --no-scripts --no-autoloader --prefer-dist
+    composer install $([ "$COMPOSER_DEV" = "true" ] || echo --no-dev) --no-interaction --no-scripts --no-autoloader --prefer-dist
 
 # --- Runtime ---------------------------------------------------------------
 FROM webdevops/php-nginx:8.3 AS app
+ARG COMPOSER_DEV=false
 ENV APP_ENV=production \
     APP_DEBUG=false \
     LOG_CHANNEL=stderr \
@@ -39,7 +42,7 @@ COPY deploy/nginx.conf /opt/docker/etc/nginx/vhost.common.d/20-madrasa.conf
 COPY --from=vendor /app/vendor ./vendor
 COPY . .
 COPY --from=assets /app/public/build ./public/build
-RUN composer dump-autoload --optimize --classmap-authoritative --no-dev \
+RUN composer dump-autoload --optimize $([ "$COMPOSER_DEV" = "true" ] || echo --classmap-authoritative --no-dev) \
     && php artisan package:discover --ansi \
     && mkdir -p storage/app/private storage/framework/cache storage/framework/sessions storage/framework/views storage/logs \
     && chown -R application:application storage bootstrap/cache \

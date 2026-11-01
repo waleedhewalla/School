@@ -30,22 +30,32 @@ and what is still open.
 
 ## Run locally
 
-Requires PHP 8.3 with `intl`, `pdo_sqlite` (or `pdo_pgsql`) and Composer.
+Step-by-step guide (Windows, Mac, Linux): [docs/local-setup.md](docs/local-setup.md).
+
+Quickest, with Docker Desktop installed:
+
+```bash
+docker compose -f compose.local.yml up --build
+```
+
+Then open http://localhost:8080 (emails the app sends: http://localhost:8025).
+
+Without Docker (PHP 8.3 with `intl` and `pdo_sqlite`, Composer, Node 22):
 
 ```bash
 composer install
 npm install && npm run build
 cp .env.example .env
 php artisan key:generate
-touch database/database.sqlite
+php -r "touch('database/database.sqlite');"
 php artisan migrate --seed   # demo school "demo"; every password is "password"
-php artisan serve
+php artisan serve            # http://localhost:8000
 ```
 
-Open http://localhost:8000/login. Demo accounts: `admin@example.com` (school
-admin), `teacher@example.com` (teacher of grade 1 / أ), `parent@example.com`
-(guardian of two siblings), `student@example.com` (a grade 1 student with a quiz),
-`platform@example.com` (platform admin).
+Demo accounts: `admin@example.com` (school admin), `teacher@example.com`
+(teacher of grade 1 / أ), `parent@example.com` (guardian of two siblings),
+`student@example.com` (a grade 1 student with a quiz), `platform@example.com`
+(platform admin).
 
 ```bash
 php artisan test        # test suite
