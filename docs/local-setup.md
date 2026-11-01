@@ -1,7 +1,22 @@
 # Run Nbras on your computer
 
-Two ways. **A (Docker)** is the easiest: nothing else to install. **B** runs
-the app directly and suits developers.
+Three ways. **Codespaces** needs nothing installed (it runs in the browser).
+**A (Docker)** needs only Docker Desktop. **B** runs the app directly and
+suits developers.
+
+## In the browser: GitHub Codespaces (nothing to install)
+
+1. Sign in to github.com and open the repository `waleedhewalla/School`.
+2. Switch to the branch `claude/confident-goodall-3cpg1b`.
+3. **Code → Codespaces → Create codespace on claude/confident-goodall-3cpg1b**.
+4. Wait 5–10 minutes the first time while it prepares the demo school (the
+   terminal ends with "Nbras is ready"). The app opens in a new browser tab;
+   if not, open the **Ports** tab and click the globe next to port 8000.
+5. Sign in as `admin@example.com` / `password`.
+
+Next time, open the same codespace from **Code → Codespaces**; it starts in
+a minute. Personal GitHub accounts get free Codespaces hours each month;
+stop the codespace when you finish (**Codespaces → … → Stop**).
 
 ## Get the code
 

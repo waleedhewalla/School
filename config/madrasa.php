@@ -23,6 +23,13 @@ return [
     'school_header' => 'X-School',
 
     /*
+    | Proxies whose X-Forwarded-* headers are trusted (load balancer, TLS
+    | proxy, Codespaces): "*" or a comma-separated list of IPs. Leave empty
+    | when the app is reached directly.
+    */
+    'trusted_proxies' => env('TRUSTED_PROXIES'),
+
+    /*
     | Most public admission applications one school accepts per day (each
     | sends an SMS), as a guard against abuse of the public form.
     */

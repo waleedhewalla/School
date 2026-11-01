@@ -13,6 +13,7 @@ use App\Support\Messaging\WhatsAppGateway;
 use App\Support\Pdf\GotenbergPdfRenderer;
 use App\Support\Pdf\PdfRenderer;
 use App\Support\Tenancy\CurrentSchool;
+use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
@@ -56,6 +57,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Read here rather than in bootstrap/app.php so a value in .env counts too.
+        if ($proxies = config('madrasa.trusted_proxies')) {
+            TrustProxies::at($proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
+
         // Platform staff (support/onboarding) may act in any school they
         // have entered; everyone else goes through their school roles.
         Gate::before(fn (User $user) => $user->platformAccessAllowed() ? true : null);

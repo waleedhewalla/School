@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\SchoolRole;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Middleware\TrustProxies;
 use Laravel\Sanctum\Sanctum;
 use Tests\Concerns\CreatesSchools;
 use Tests\TestCase;
@@ -70,5 +71,18 @@ class LocaleTest extends TestCase
         $this->getJson('/api/v1/subjects?lang=ar', $this->schoolHeader($school))
             ->assertForbidden()
             ->assertJsonPath('message', 'ليس لديك صلاحية الدخول إلى هذه المدرسة.');
+    }
+
+    public function test_forwarded_https_is_honoured_only_from_trusted_proxies(): void
+    {
+        $headers = ['X-Forwarded-Proto' => 'https', 'X-Forwarded-Host' => 'school.example.sa', 'X-Forwarded-Port' => '443'];
+
+        TrustProxies::flushState();
+        $this->get('/login', $headers)->assertDontSee('https://school.example.sa/build', false);
+
+        TrustProxies::at('*');
+        $this->get('/login', $headers)->assertOk();
+        $this->assertSame('https://school.example.sa', url('/'));
+        TrustProxies::flushState();
     }
 }

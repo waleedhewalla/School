@@ -30,7 +30,10 @@ and what is still open.
 
 ## Run locally
 
-Step-by-step guide (Windows, Mac, Linux): [docs/local-setup.md](docs/local-setup.md).
+Step-by-step guide (browser, Windows, Mac, Linux): [docs/local-setup.md](docs/local-setup.md).
+
+Nothing to install: on GitHub choose **Code → Codespaces → Create codespace** on this branch;
+it prepares the demo school and opens the app in the browser.
 
 Quickest, with Docker Desktop installed:
 
